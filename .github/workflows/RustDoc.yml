@@ -1,0 +1,24 @@
+name: Rustdoc
+on:
+  push:
+   branches:
+   - master
+   
+jobs:
+  doc:
+    name: RustDoc
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      
+    - name: Build Documentation
+      run: cargo doc --all --no-deps
+      
+    - name: Deploy Docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: ./target/doc
+        force_orphan: true
