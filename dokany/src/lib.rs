@@ -12,12 +12,22 @@ pub fn init() {
     });
 }
 
+/// Get the version.
+pub fn version() -> u32 {
+    init();
+
+    unsafe { sys::DokanVersion() }
+}
+
 #[cfg(test)]
 mod test {
-    // use super::*;
+    use super::*;
 
     #[test]
     fn test() {
-        // TODO
+        init();
+
+        let version = version();
+        println!("Dokan Version: {version}");
     }
 }
