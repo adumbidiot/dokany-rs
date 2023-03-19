@@ -232,4 +232,12 @@ extern "stdcall" {
     ///# Returns
     /// The version of Dokan
     pub fn DokanVersion() -> ULONG;
+
+    /// Get the version of the Dokan driver.
+    ///
+    /// The returned ULONG is the version number without the dots.
+    ///
+    /// # Return
+    /// The version of Dokan driver or 0 on failure.
+    pub fn DokanDriverVersion() -> ULONG;
 }
