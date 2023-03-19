@@ -1,8 +1,9 @@
 mod main_result;
+mod option_flags;
 
 pub use self::main_result::MainResult;
+pub use self::option_flags::OptionFlags;
 pub use dokany_sys as sys;
-
 use std::sync::Once;
 
 /// Initialize the library, if needed.
