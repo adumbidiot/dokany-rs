@@ -5,12 +5,15 @@ pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
+pub use windows_sys::Win32::Foundation::FALSE;
+pub use windows_sys::Win32::Foundation::TRUE;
 
 pub type USHORT = u16;
 pub type ULONG = u32;
 pub type ULONG64 = u64;
 pub type LPCWSTR = PCWSTR;
 pub type DWORD = u32;
+pub type WCHAR = u16;
 
 pub type DokanMainResult = std::os::raw::c_int;
 
@@ -178,11 +181,20 @@ extern "stdcall" {
 
     /// Unmount the Dokan instance.
     ///
-    /// Unmount and wait until all resources of the DokanInstance are released.
+    /// Unmount and wait until all resources of the `DokanInstance` are released.
     ///
     /// # Arguments
     /// `DokanInstance`: The dokan mount context created by [DokanCreateFileSystem].
     pub fn DokanCloseHandle(DokanInstance: DOKAN_HANDLE);
+
+    /// Unmount a Dokan device from a driver letter.
+    ///
+    /// # Arguments
+    /// `DriveLetter`: Dokan driver letter to unmount.
+    ///
+    /// # Return
+    /// `TRUE` if device was unmounted or `FALSE` in case of failure or device not found.
+    pub fn DokanUnmount(DriveLetter: WCHAR) -> BOOL;
 
     /// Get the version of Dokan.
     ///
