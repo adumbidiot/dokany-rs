@@ -32,7 +32,7 @@ pub const DOKAN_DRIVE_LETTER_ERROR: DokanMainResult = -2;
 /// Dokan mount failed - Can't install driver.
 pub const DOKAN_DRIVER_INSTALL_ERROR: DokanMainResult = -3;
 /// Dokan mount failed - Driver answer that something is wrong.
-pub const DOKAN_START_ERROR: DokanMainResult = -3;
+pub const DOKAN_START_ERROR: DokanMainResult = -4;
 /// Dokan mount failed.
 ///
 /// Can't assign a drive letter or mount point.
