@@ -271,6 +271,12 @@ pub type FindFilesCallback = extern "stdcall" fn(
     FillFindData: PFillFindData,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type FindFilesWithPatternCallback = extern "stdcall" fn(
+    PathName: LPCWSTR,
+    SearchPattern: LPCWSTR,
+    FillFindData: PFillFindData,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -444,6 +450,30 @@ pub struct DOKAN_OPERATIONS {
     /// # References
     /// See FindFilesWithPattern
     pub FindFiles: Option<FindFilesCallback>,
+
+    /// FindFilesWithPattern Dokan API callback
+    ///
+    /// Same as `DOKAN_OPERATIONS.FindFiles` but with a search pattern.\n
+    /// The search pattern is a Windows MS-DOS-style expression.
+    /// It can contain wild cards and extended characters or none of them. See [DokanIsNameInExpression].
+    ///
+    /// If the function is not implemented, `DOKAN_OPERATIONS.FindFiles`
+    /// will be called instead and the result will be filtered internally by the library.
+    /// It is recommended to have this implemented for performance reason.
+    ///
+    /// # Arguments
+    /// `PathName`: Path requested by the Kernel on the FileSystem.
+    /// `SearchPattern`: Search pattern.
+    /// `FillFindData`: Callback that has to be called with PWIN32_FIND_DATAW that contains file information.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See FindFiles
+    /// See DokanIsNameInExpression
+    pub FindFilesWithPattern: Option<FindFilesWithPatternCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
