@@ -11,8 +11,10 @@ pub use windows_sys::Win32::Foundation::FALSE;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::TRUE;
+pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;
 pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
 
+// Primitives
 pub type USHORT = u16;
 pub type ULONG = u32;
 pub type ULONG64 = u64;
@@ -27,6 +29,7 @@ pub type LPVOID = PVOID;
 pub type LPDWORD = *mut DWORD;
 pub type LONGLONG = i64;
 pub type LPCVOID = *const std::os::raw::c_void;
+pub type LPBY_HANDLE_FILE_INFORMATION = *mut BY_HANDLE_FILE_INFORMATION;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -214,6 +217,8 @@ pub struct DOKAN_FILE_INFO {
     pub WriteToEndOfFile: UCHAR,
 }
 
+pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
+
 pub type PDOKAN_IO_SECURITY_CONTEXT = *mut std::os::raw::c_void;
 
 pub type ZwCreateFileCallback = extern "stdcall" fn(
@@ -247,6 +252,11 @@ pub type WriteFileCallback = extern "stdcall" fn(
 ) -> NTSTATUS;
 pub type FlushFileBuffersCallback =
     extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type GetFileInformationCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    Buffer: LPBY_HANDLE_FILE_INFORMATION,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+);
 
 /// Dokan API callbacks interface
 ///
@@ -388,9 +398,22 @@ pub struct DOKAN_OPERATIONS {
     /// # Returns
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub FlushFileBuffers: Option<FlushFileBuffersCallback>,
+
+    /// GetFileInformation Dokan API callback
+    ///
+    /// Get specific information on a file.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `Buffer`: BY_HANDLE_FILE_INFORMATION struct to fill.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub GetFileInformation: Option<GetFileInformationCallback>,
 }
 
-pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
+pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
 
 /// Dokan Mount point information
 #[repr(C)]
@@ -410,8 +433,6 @@ pub struct DOKAN_MOUNT_POINT_INFO {
 }
 
 pub type PDOKAN_MOUNT_POINT_INFO = *mut DOKAN_MOUNT_POINT_INFO;
-
-pub type PDOKAN_OPERATIONS = *mut std::os::raw::c_void;
 
 extern "stdcall" {
     /// Initialize all required Dokan internal resources.
