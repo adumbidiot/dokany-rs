@@ -7,6 +7,7 @@ pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
 pub use windows_sys::Win32::Foundation::FALSE;
+pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::TRUE;
 
 pub type USHORT = u16;
@@ -15,6 +16,7 @@ pub type ULONG64 = u64;
 pub type LPCWSTR = PCWSTR;
 pub type DWORD = u32;
 pub type WCHAR = u16;
+pub type PULONG = *mut ULONG;
 
 pub type DokanMainResult = std::os::raw::c_int;
 
@@ -101,6 +103,25 @@ impl Default for DOKAN_OPTIONS {
         Self::new()
     }
 }
+
+/// Dokan Mount point information
+#[repr(C)]
+pub struct DOKAN_MOUNT_POINT_INFO {
+    /// File System Type
+    pub Type: ULONG,
+    /// Mount point. Can be "M:\" (drive letter) or "C:\mount\dokan" (path in NTFS)
+    pub MountPoint: [WCHAR; MAX_PATH as usize],
+    /// UNC name used for network volume
+    pub UNCName: [WCHAR; 64],
+    /// Disk Device Name
+    pub DeviceName: [WCHAR; 64],
+    /// Session ID of calling process
+    pub SessionId: ULONG,
+    /// Contains information about the flags on the mount
+    pub MountOptions: ULONG,
+}
+
+pub type PDOKAN_MOUNT_POINT_INFO = *mut DOKAN_MOUNT_POINT_INFO;
 
 pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
 pub type PDOKAN_OPERATIONS = *mut std::os::raw::c_void;
@@ -265,4 +286,16 @@ extern "stdcall" {
     /// # Return
     /// A handle to the account token for the user on whose behalf the code is running.
     pub fn DokanOpenRequestorToken(DokanFileInfo: PDOKAN_FILE_INFO) -> HANDLE;
+
+    /// Get active Dokan mount points.
+    ///
+    /// Returned array need to be released by calling [DokanReleaseMountPointList]
+    ///
+    /// # Arguments
+    /// `uncOnly`: Get only instances that have UNC Name.
+    /// `nbRead`: Number of instances successfully retrieved.
+    ///
+    /// # Return
+    /// Allocate array of DOKAN_MOUNT_POINT_INFO.
+    pub fn DokanGetMountPointList(uncOnly: BOOL, nbRead: PULONG) -> PDOKAN_MOUNT_POINT_INFO;
 }
