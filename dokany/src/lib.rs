@@ -1,3 +1,6 @@
+mod main_result;
+
+pub use self::main_result::MainResult;
 pub use dokany_sys as sys;
 
 use std::sync::Once;
