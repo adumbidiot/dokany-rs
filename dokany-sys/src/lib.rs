@@ -196,6 +196,15 @@ extern "stdcall" {
     /// `TRUE` if device was unmounted or `FALSE` in case of failure or device not found.
     pub fn DokanUnmount(DriveLetter: WCHAR) -> BOOL;
 
+    /// Unmount a Dokan device from a mount point
+    ///
+    /// # Parameters
+    /// * MountPoint Mount point to unmount ("Z", "Z:", "Z:\", "Z:\MyMountPoint").
+    ///
+    /// # Return
+    /// `TRUE` if device was unmounted or `FALSE` in case of failure or device not found.
+    pub fn DokanRemoveMountPoint(MountPoint: LPCWSTR) -> BOOL;
+
     /// Get the version of Dokan.
     ///
     /// The returned ULONG is the version number without the dots.
