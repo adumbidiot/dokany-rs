@@ -37,6 +37,8 @@ pub const DOKAN_VERSION_ERROR: DokanMainResult = -7;
 /// a fixed-size buffer.
 pub const VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE: usize = 1024 * 16;
 
+pub type DOKAN_HANDLE = *const std::os::raw::c_void;
+
 /// Dokan mount options used to describe Dokan device behavior.
 #[repr(C)]
 #[derive(Debug, PartialEq, Eq)]
@@ -126,6 +128,28 @@ extern "stdcall" {
     pub fn DokanMain(
         DokanOptions: PDOKAN_OPTIONS,
         DokanOperations: PDOKAN_OPERATIONS,
+    ) -> DokanMainResult;
+
+    /// Mount a new Dokan Volume.
+    ///
+    /// It is mandatory to have called \ref DokanInit previously to use this API.
+    ///
+    /// This function returns directly on device mount or on failure.
+    /// See [`DokanMainResult`] for possible errors.
+    ///
+    /// [`DokanWaitForFileSystemClosed`] can be used to wait until the device is unmount.
+    ///
+    /// # Arguments
+    /// `DokanOptions`: a [DOKAN_OPTIONS] that describe the mount.
+    /// `DokanOperations`: Instance of [DOKAN_OPERATIONS] that will be called for each request made by the kernel.
+    /// `DokanInstance`: Dokan mount instance context that can be used for related instance calls like [`DokanIsFileSystemRunning`].
+    ///
+    /// # Returns
+    /// [`DokanMainResult`] status.
+    pub fn DokanCreateFileSystem(
+        DokanOptions: PDOKAN_OPTIONS,
+        DokanOperations: PDOKAN_OPERATIONS,
+        DokanInstance: *mut DOKAN_HANDLE,
     ) -> DokanMainResult;
 
     /// Get the version of Dokan.
