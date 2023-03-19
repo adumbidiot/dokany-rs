@@ -245,6 +245,8 @@ pub type WriteFileCallback = extern "stdcall" fn(
     Offset: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type FlushFileBuffersCallback =
+    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -374,6 +376,18 @@ pub struct DOKAN_OPERATIONS {
     /// References
     /// See ReadFile
     pub WriteFile: Option<WriteFileCallback>,
+
+    /// FlushFileBuffers Dokan API callback
+    ///
+    /// Clears buffers for this context and causes any buffered data to be written to the file.
+    ///
+    /// # Arguments
+    /// FileName File path requested by the Kernel on the FileSystem.
+    /// DokanFileInfo Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub FlushFileBuffers: Option<FlushFileBuffersCallback>,
 }
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
