@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-pub use windows_sys::core::PWSTR;
+pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
 
