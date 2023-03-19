@@ -103,6 +103,7 @@ impl Default for DOKAN_OPTIONS {
 
 pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
 pub type PDOKAN_OPERATIONS = *mut std::os::raw::c_void;
+pub type PDOKAN_FILE_INFO = *mut std::os::raw::c_void;
 
 extern "stdcall" {
     /// Initialize all required Dokan internal resources.
@@ -240,4 +241,14 @@ extern "stdcall" {
     /// # Return
     /// The version of Dokan driver or 0 on failure.
     pub fn DokanDriverVersion() -> ULONG;
+
+    /// Extends the timeout of the current IO operation in driver.
+    ///
+    /// # Parameters
+    /// `Timeout`: Extended time in milliseconds requested.
+    /// `DokanFileInfo`: [DOKAN_FILE_INFO] of the operation to extend.
+    ///
+    /// # Return
+    /// If the operation was successful.
+    pub fn DokanResetTimeout(Timeout: ULONG, DokanFileInfo: PDOKAN_FILE_INFO) -> BOOL;
 }
