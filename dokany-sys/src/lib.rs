@@ -298,4 +298,16 @@ extern "stdcall" {
     /// # Return
     /// Allocate array of DOKAN_MOUNT_POINT_INFO.
     pub fn DokanGetMountPointList(uncOnly: BOOL, nbRead: PULONG) -> PDOKAN_MOUNT_POINT_INFO;
+
+    /// Release Mount point list resources from [DokanGetMountPointList].
+    ///
+    /// After [DokanGetMountPointList] call you will receive a dynamically allocated array of DOKAN_MOUNT_POINT_INFO.
+    /// This array needs to be released when no longer needed by calling this function.
+    ///
+    /// # Arguments
+    /// `list`: Allocated array of DOKAN_MOUNT_POINT_INFO from [DokanGetMountPointList].
+    ///
+    /// # Return
+    /// Nothing.
+    pub fn DokanReleaseMountPointList(list: PDOKAN_MOUNT_POINT_INFO);
 }
