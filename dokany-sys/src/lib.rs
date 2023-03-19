@@ -39,6 +39,7 @@ pub const VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE: usize = 1024 * 16;
 
 /// Dokan mount options used to describe Dokan device behavior.
 #[repr(C)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DOKAN_OPTIONS {
     /// Version of the Dokan features requested without dots (version "123" is equal to Dokan version 1.2.3).
     pub Version: USHORT,
@@ -78,6 +79,19 @@ pub struct DOKAN_OPTIONS {
     ///
     /// See <a href="https://docs.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-initializesecuritydescriptor">InitializeSecurityDescriptor</a>
     pub VolumeSecurityDescriptor: [CHAR; VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE],
+}
+
+impl DOKAN_OPTIONS {
+    /// Make an empty [`DOKAN_OPTIONS`].
+    pub fn new() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
+impl Default for DOKAN_OPTIONS {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
