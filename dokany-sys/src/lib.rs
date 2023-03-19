@@ -207,6 +207,20 @@ pub struct DOKAN_FILE_INFO {
     pub WriteToEndOfFile: UCHAR,
 }
 
+/// Dokan API callbacks interface
+///
+/// DOKAN_OPERATIONS is a struct of callbacks that describe all Dokan API operations
+/// that will be called when Windows access to the filesystem.
+///
+/// If an error occurs, return NTSTATUS (https://support.microsoft.com/en-us/kb/113996).
+/// Win32 Error can be converted to `NTSTATUS` with [DokanNtStatusFromWin32]
+///
+/// All callbacks can be set to `NULL` or return `STATUS_NOT_IMPLEMENTED`
+// if supporting one of them is not desired. Be aware that returning such values to important callbacks
+/// such as DOKAN_OPERATIONS.ZwCreateFile / DOKAN_OPERATIONS.ReadFile / ... would make the filesystem not work or become unstable.
+#[repr(C)]
+pub struct DOKAN_OPERATIONS {}
+
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
 
 /// Dokan Mount point information
