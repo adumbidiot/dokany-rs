@@ -10,6 +10,7 @@ pub type USHORT = u16;
 pub type ULONG = u32;
 pub type ULONG64 = u64;
 pub type LPCWSTR = PCWSTR;
+pub type DWORD = u32;
 
 pub type DokanMainResult = std::os::raw::c_int;
 
@@ -161,6 +162,19 @@ extern "stdcall" {
     /// # Return
     /// Whether the FileSystem is still running or not.
     pub fn DokanIsFileSystemRunning(DokanInstance: DOKAN_HANDLE) -> BOOL;
+
+    /// Wait until the FileSystem is unmount.
+    ///
+    /// # Arguments
+    /// `DokanInstance`: The dokan mount context created by \ref DokanCreateFileSystem .
+    /// `dwMilliseconds`: The time-out interval, in milliseconds. See <a href="https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject">WaitForSingleObject</a>.
+    ///
+    /// # Return
+    /// See <a href="https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject">WaitForSingleObject</a> for a description of return values.
+    pub fn DokanWaitForFileSystemClosed(
+        DokanInstance: DOKAN_HANDLE,
+        dwMilliseconds: DWORD,
+    ) -> DWORD;
 
     /// Get the version of Dokan.
     ///
