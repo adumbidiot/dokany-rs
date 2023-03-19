@@ -43,6 +43,15 @@ pub fn unmount(drive_letter: char) -> bool {
     unsafe { sys::DokanUnmount(drive_letter) == sys::TRUE }
 }
 
+/// Shutdown the api and release all resources.
+///
+/// # Safety
+/// * The api must have been initialized prior to this call.
+/// * You must free all api objects before using this function.
+pub unsafe fn shutdown() {
+    unsafe { sys::DokanShutdown() }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -59,5 +68,7 @@ mod test {
 
         let unmount_z = unmount('Z');
         println!("Unmount Z: {}", unmount_z);
+
+        unsafe { shutdown() }
     }
 }
