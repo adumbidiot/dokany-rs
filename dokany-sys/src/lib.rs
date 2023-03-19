@@ -97,7 +97,7 @@ impl Default for DOKAN_OPTIONS {
 }
 
 pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
-pub type PDOKAN_OPERATIONS = std::os::raw::c_void;
+pub type PDOKAN_OPERATIONS = *mut std::os::raw::c_void;
 
 extern "stdcall" {
     /// Initialize all required Dokan internal resources.
