@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
+pub use std::os::windows::raw::HANDLE;
 pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
@@ -251,4 +252,17 @@ extern "stdcall" {
     /// # Return
     /// If the operation was successful.
     pub fn DokanResetTimeout(Timeout: ULONG, DokanFileInfo: PDOKAN_FILE_INFO) -> BOOL;
+
+    /// Get the handle to Access Token.
+    ///
+    /// This method needs be called in \ref DOKAN_OPERATIONS.ZwCreateFile callback.
+    /// The caller must call <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211(v=vs.85).aspx">CloseHandle</a>
+    /// for the returned handle.
+    ///
+    /// # Arguments
+    /// `DokanFileInfo`: [DOKAN_FILE_INFO] of the operation to extend.
+    ///
+    /// # Return
+    /// A handle to the account token for the user on whose behalf the code is running.
+    pub fn DokanOpenRequestorToken(DokanFileInfo: PDOKAN_FILE_INFO) -> HANDLE;
 }
