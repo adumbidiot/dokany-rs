@@ -294,6 +294,12 @@ pub type DeleteFileCallback =
     extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 pub type DeleteDirectoryCallback =
     extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type MoveFileCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    NewFileName: LPCWSTR,
+    ReplaceIfExisting: BOOL,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -578,6 +584,20 @@ pub struct DOKAN_OPERATIONS {
     /// [DeleteFile]
     /// [Cleanup]
     pub DeleteDirectory: Option<DeleteDirectoryCallback>,
+
+    /// MoveFile Dokan API callback
+    ///
+    ///Move a file or directory to a new destination
+    ///
+    /// # Arguments
+    /// `FileName`: Path for the file to be moved.
+    /// `NewFileName`: Path for the new location of the file.
+    /// `ReplaceIfExisting`: If destination already exists, can it be replaced?
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub MoveFile: Option<MoveFileCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
