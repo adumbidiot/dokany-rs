@@ -9,6 +9,7 @@ pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
 pub use windows_sys::Win32::Foundation::FALSE;
+pub use windows_sys::Win32::Foundation::FILETIME;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::TRUE;
@@ -282,6 +283,13 @@ pub type SetFileAttributesCallback = extern "stdcall" fn(
     FileAttributes: DWORD,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type SetFileTimeCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    CreationTime: *const FILETIME,
+    LastAccessTime: *const FILETIME,
+    LastWriteTime: *const FILETIME,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -492,6 +500,21 @@ pub struct DOKAN_OPERATIONS {
     /// # Return
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub SetFileAttributes: Option<SetFileAttributesCallback>,
+
+    /// SetFileTime Dokan API callback
+    ///
+    /// Set file attributes on a specific file
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `CreationTime`: Creation FILETIME.
+    /// `LastAccessTime`: LastAccess FILETIME.
+    /// `LastWriteTime`: LastWrite FILETIME.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS`: on success or NTSTATUS appropriate to the request result.
+    pub SetFileTime: Option<SetFileTimeCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
