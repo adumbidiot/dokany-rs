@@ -205,6 +205,27 @@ extern "stdcall" {
     /// `TRUE` if device was unmounted or `FALSE` in case of failure or device not found.
     pub fn DokanRemoveMountPoint(MountPoint: LPCWSTR) -> BOOL;
 
+    /// Checks whether Name matches Expression
+    ///
+    /// Behave like `FsRtlIsNameInExpression` routine from <a href="https://msdn.microsoft.com/en-us/library/ff546850(v=VS.85).aspx">Microsoft</a>\n
+    /// `*` (asterisk) Matches zero or more characters.\n
+    /// <tt>?</tt> (question mark) Matches a single character.\n
+    /// `DOS_DOT` (`"` quotation mark) Matches either a period or zero characters beyond the name string.\n
+    /// `DOS_QM` (`>` greater than) Matches any single character or, upon encountering a period or end
+    ///        of name string, advances the expression to the end of the set of
+    ///       contiguous DOS_QMs.\n
+    /// `DOS_STAR` (`<` less than) Matches zero or more characters until encountering and matching
+    ///          the final `.` in the name.
+    ///
+    /// # Arguments
+    /// `Expression`: Expression can contain any of the above characters.
+    /// `Name`: Name to check
+    /// `IgnoreCase`: Case sensitive or not
+    ///
+    /// # Return
+    /// `result` if name matches the expression
+    pub fn DokanIsNameInExpression(Expression: LPCWSTR, Name: LPCWSTR, IgnoreCase: BOOL) -> BOOL;
+
     /// Get the version of Dokan.
     ///
     /// The returned ULONG is the version number without the dots.
