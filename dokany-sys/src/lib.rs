@@ -292,6 +292,8 @@ pub type SetFileTimeCallback = extern "stdcall" fn(
 ) -> NTSTATUS;
 pub type DeleteFileCallback =
     extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type DeleteDirectoryCallback =
+    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -546,6 +548,36 @@ pub struct DOKAN_OPERATIONS {
     /// See DeleteDirectory
     /// See Cleanup
     pub DeleteFile: Option<DeleteFileCallback>,
+
+    //// DeleteDirectory Dokan API callback
+    ///
+    /// Check if it is possible to delete a directory.
+    ///
+    /// DeleteDirectory will also be called with DOKAN_FILE_INFO.DeleteOnClose set to `FALSE`
+    /// to notify the driver when the file is no longer requested to be deleted.
+    ///
+    /// The Directory in DeleteDirectory should not be deleted, but instead
+    /// must be checked as to whether or not it can be deleted,
+    /// and `STATUS_SUCCESS` should be returned (when it can be deleted) or
+    /// appropriate error codes, such as `STATUS_ACCESS_DENIED`,
+    /// `STATUS_OBJECT_PATH_NOT_FOUND`, or `STATUS_DIRECTORY_NOT_EMPTY`, should
+    /// be returned.
+    ///
+    /// When `STATUS_SUCCESS` is returned, a Cleanup call is received afterwards with
+    /// DOKAN_FILE_INFO.DeleteOnClose set to `TRUE`. Only then must the closing file
+    /// be deleted.
+    ///
+    /// # Arguments  
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or `NTSTATUS` appropriate to the request result.
+    ///
+    /// # References
+    /// [DeleteFile]
+    /// [Cleanup]
+    pub DeleteDirectory: Option<DeleteDirectoryCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
