@@ -2,6 +2,7 @@
 #![allow(non_camel_case_types)]
 
 pub use std::os::raw::c_int;
+pub use std::os::raw::c_void;
 pub use std::os::windows::raw::HANDLE;
 pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOL;
@@ -13,6 +14,7 @@ pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::TRUE;
 pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;
 pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
+pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
 
 // Primitives
 pub type USHORT = u16;
@@ -22,14 +24,15 @@ pub type LPCWSTR = PCWSTR;
 pub type DWORD = u32;
 pub type WCHAR = u16;
 pub type PULONG = *mut ULONG;
-pub type PVOID = *mut std::os::raw::c_void;
+pub type PVOID = *mut c_void;
 pub type UCHAR = u8;
 pub type ACCESS_MASK = FILE_ACCESS_FLAGS;
 pub type LPVOID = PVOID;
 pub type LPDWORD = *mut DWORD;
 pub type LONGLONG = i64;
-pub type LPCVOID = *const std::os::raw::c_void;
+pub type LPCVOID = *const c_void;
 pub type LPBY_HANDLE_FILE_INFORMATION = *mut BY_HANDLE_FILE_INFORMATION;
+pub type PWIN32_FIND_DATAW = *mut WIN32_FIND_DATAW;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -111,7 +114,7 @@ pub const DOKAN_VERSION_ERROR: DokanMainResult = -7;
 /// a fixed-size buffer.
 pub const VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE: usize = 1024 * 16;
 
-pub type DOKAN_HANDLE = *const std::os::raw::c_void;
+pub type DOKAN_HANDLE = *const c_void;
 
 /// Dokan mount options used to describe Dokan device behavior.
 #[repr(C)]
@@ -219,7 +222,13 @@ pub struct DOKAN_FILE_INFO {
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
 
-pub type PDOKAN_IO_SECURITY_CONTEXT = *mut std::os::raw::c_void;
+pub type PDOKAN_IO_SECURITY_CONTEXT = *mut c_void;
+
+/// FillFindData Used to add an entry in FindFiles operation
+///
+/// # Return
+/// 1 if buffer is full, otherwise 0 (currently it never returns 1)
+pub type PFillFindData = extern "stdcall" fn(PWIN32_FIND_DATAW, PDOKAN_FILE_INFO) -> c_int;
 
 pub type ZwCreateFileCallback = extern "stdcall" fn(
     FileName: LPCWSTR,
@@ -257,6 +266,11 @@ pub type GetFileInformationCallback = extern "stdcall" fn(
     Buffer: LPBY_HANDLE_FILE_INFORMATION,
     DokanFileInfo: PDOKAN_FILE_INFO,
 );
+pub type FindFilesCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    FillFindData: PFillFindData,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -411,6 +425,25 @@ pub struct DOKAN_OPERATIONS {
     /// # Returns
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub GetFileInformation: Option<GetFileInformationCallback>,
+
+    /// FindFiles Dokan API callback
+    ///
+    /// List all files in the requested path.
+    /// `DOKAN_OPERATIONS.FindFilesWithPattern` is checked first. If it is not implemented or
+    /// returns `STATUS_NOT_IMPLEMENTED`, then FindFiles is called, if assigned.
+    /// It is recommended to have this implemented for performance reason.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `FillFindData`: Callback that has to be called with PWIN32_FIND_DATAW that contain file information.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See FindFilesWithPattern
+    pub FindFiles: Option<FindFilesCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
