@@ -223,6 +223,8 @@ pub type ZwCreateFileCallback = extern "stdcall" fn(
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 
+pub type CleanupCallback = extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
+
 /// Dokan API callbacks interface
 ///
 /// DOKAN_OPERATIONS is a struct of callbacks that describe all Dokan API operations
@@ -268,9 +270,27 @@ pub struct DOKAN_OPERATIONS {
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     ///
     /// # References
-    /// <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff566424(v=vs.85).aspx">See ZwCreateFile for more information about the parameters of this callback (MSDN).</a>
-    /// DokanMapKernelToUserCreateFileFlags
+    /// See <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff566424(v=vs.85).aspx">See ZwCreateFile for more information about the parameters of this callback (MSDN).</a>
+    /// See DokanMapKernelToUserCreateFileFlags
     pub ZwCreateFile: Option<ZwCreateFileCallback>,
+
+    /// Cleanup Dokan API callback
+    ///
+    /// Cleanup request before `CloseFile` is called.
+    ///
+    /// When DOKAN_FILE_INFO.DeleteOnClose is `TRUE`, the file in Cleanup must be deleted.
+    /// The function cannot fail therefore the filesystem need to ensure ahead
+    /// that a the delete can safely happen during Cleanup.
+    /// See DeleteFile documentation for explanation.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # References
+    /// See DeleteFile
+    /// See DeleteDirectory
+    pub Cleanup: Option<CleanupCallback>,
 }
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
