@@ -277,6 +277,11 @@ pub type FindFilesWithPatternCallback = extern "stdcall" fn(
     FillFindData: PFillFindData,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type SetFileAttributesCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    FileAttributes: DWORD,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -474,6 +479,19 @@ pub struct DOKAN_OPERATIONS {
     /// See FindFiles
     /// See DokanIsNameInExpression
     pub FindFilesWithPattern: Option<FindFilesWithPatternCallback>,
+
+    /// SetFileAttributes Dokan API callback
+    ///
+    /// Set file attributes on a specific file
+    ///
+    /// # Arguments
+    /// FileName File path requested by the Kernel on the FileSystem.
+    /// FileAttributes FileAttributes to set on file.
+    /// DokanFileInfo Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub SetFileAttributes: Option<SetFileAttributesCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
