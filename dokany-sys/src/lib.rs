@@ -222,8 +222,9 @@ pub type ZwCreateFileCallback = extern "stdcall" fn(
     CreateOptions: ULONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-
 pub type CleanupCallback = extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
+pub type CloseFileCallback =
+    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
 
 /// Dokan API callbacks interface
 ///
@@ -291,6 +292,18 @@ pub struct DOKAN_OPERATIONS {
     /// See DeleteFile
     /// See DeleteDirectory
     pub Cleanup: Option<CleanupCallback>,
+
+    /// CloseFile Dokan API callback
+    ///
+    /// Clean remaining Context
+    ///
+    /// CloseFile is called at the end of the life of the context.
+    /// Anything remaining in `DOKAN_FILE_INFO.Context` must be cleared before returning.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `DokanFileInfo`: Information about the file or directory.
+    pub CloseFile: Option<CloseFileCallback>,
 }
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
