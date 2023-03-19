@@ -21,6 +21,56 @@ pub type PULONG = *mut ULONG;
 pub type PVOID = *mut std::os::raw::c_void;
 pub type UCHAR = u8;
 
+pub type DokanOptionFlag = ULONG;
+
+/// Enable ouput debug message
+pub const DOKAN_OPTION_DEBUG: DokanOptionFlag = 1;
+/// Enable ouput debug message to stderr
+pub const DOKAN_OPTION_STDERR: DokanOptionFlag = 1 << 1;
+/// Enable the use of alternate stream paths in the form
+/// <file-name>:<stream-name>. If this is not specified then the driver will
+// fail any attempt to access a path with a colon.
+pub const DOKAN_OPTION_ALT_STREAM: DokanOptionFlag = 1 << 2;
+/// Enable mount drive as write-protected
+pub const DOKAN_OPTION_WRITE_PROTECT: DokanOptionFlag = 1 << 3;
+/// Use network drive - Dokan network provider needs to be installed and a `DOKAN_OPTIONS.UNCName` provided
+pub const DOKAN_OPTION_NETWORK: DokanOptionFlag = 1 << 4;
+/// Use removable drive
+///
+/// Be aware that on some environments, the userland application will be denied
+/// to communicate with the drive which will result in a unwanted unmount.
+/// See <a href="https://github.com/dokan-dev/dokany/issues/843">Issue #843</a>
+pub const DOKAN_OPTION_REMOVABLE: DokanOptionFlag = 1 << 5;
+/// Use Windows Mount Manager.
+///
+/// This option is highly recommended to use for better system integration.
+/// If a drive letter is used but is busy, Mount manager will assign one for us and
+/// `DOKAN_OPERATIONS.Mounted` parameters will contain the new mount point.
+pub const DOKAN_OPTION_MOUNT_MANAGER: DokanOptionFlag = 1 << 6;
+/// Mount the drive on current session only
+pub const DOKAN_OPTION_CURRENT_SESSION: DokanOptionFlag = 1 << 7;
+/// Enable Lockfile/Unlockfile operations.
+///
+/// Otherwise Dokan will take care of it
+pub const DOKAN_OPTION_FILELOCK_USER_MODE: DokanOptionFlag = 1 << 8;
+/// Enable Case sensitive path.
+///
+/// By default all path are case insensitive.
+/// For case sensitive: \dir\File & \diR\\file are different files
+/// but for case insensitive they are the same.
+pub const DOKAN_OPTION_CASE_SENSITIVE: DokanOptionFlag = 1 << 9;
+/// Allows unmounting of network drive via explorer
+pub const DOKAN_OPTION_ENABLE_UNMOUNT_NETWORK_DRIVE: DokanOptionFlag = 1 << 10;
+/// Forward the kernel driver global and volume logs to the userland.
+///
+/// Can be very slow if single thread is enabled.
+pub const DOKAN_OPTION_DISPATCH_DRIVER_LOGS: DokanOptionFlag = 1 << 11;
+/// Pull batches of events from the driver instead of a single one and execute them parallelly.
+///
+/// This option should only be used on computers with low cpu count
+/// and userland filesystem taking time to process requests (like remote storage).
+pub const DOKAN_OPTION_ALLOW_IPC_BATCHING: DokanOptionFlag = 1 << 12;
+
 pub type DokanMainResult = c_int;
 
 /// Dokan mount succeed.
