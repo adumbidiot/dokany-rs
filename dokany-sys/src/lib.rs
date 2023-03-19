@@ -7,7 +7,7 @@ pub use windows_sys::Win32::Foundation::CHAR;
 pub type USHORT = u16;
 pub type ULONG = u32;
 pub type ULONG64 = u64;
-pub type LPCWSTR = PWSTR;
+pub type LPCWSTR = PCWSTR;
 
 /// This is arbitrary. There isn't really an absolute max, but we marshal it in
 /// a fixed-size buffer.
