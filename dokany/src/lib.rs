@@ -19,15 +19,45 @@ pub fn version() -> u32 {
     unsafe { sys::DokanVersion() }
 }
 
+/// Get the driver version.
+pub fn driver_version() -> u32 {
+    init();
+
+    unsafe { sys::DokanDriverVersion() }
+}
+
+/// Unmount the drive from the given drive letter.
+///
+/// # Panics
+/// Panics if the given char cannot fit in a u16.
+///
+/// # Returns
+/// Returns true if successful.
+pub fn unmount(drive_letter: char) -> bool {
+    init();
+
+    let drive_letter: u16 = u32::from(drive_letter)
+        .try_into()
+        .expect("`drive_letter` cannot fit in a `u16`");
+
+    unsafe { sys::DokanUnmount(drive_letter) == sys::TRUE }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
+    #[ignore]
     fn test() {
         init();
 
         let version = version();
         println!("Dokan Version: {version}");
+        let driver_version = driver_version();
+        println!("Dokan Driver Version: {driver_version}");
+
+        let unmount_z = unmount('Z');
+        println!("Unmount Z: {}", unmount_z);
     }
 }
