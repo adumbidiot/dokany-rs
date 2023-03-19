@@ -5,4 +5,5 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+bitflags = "2.0.1"
 dokany-sys = { path = "../dokany-sys" }
