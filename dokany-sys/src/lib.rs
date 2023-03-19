@@ -2,6 +2,7 @@
 #![allow(non_camel_case_types)]
 
 pub use windows_sys::core::PCWSTR;
+pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
 
@@ -151,6 +152,15 @@ extern "stdcall" {
         DokanOperations: PDOKAN_OPERATIONS,
         DokanInstance: *mut DOKAN_HANDLE,
     ) -> DokanMainResult;
+
+    /// Check if the FileSystem is still running or not.
+    ///
+    /// # Arguments
+    /// `DokanInstance`: The dokan mount context created by [`DokanCreateFileSystem`].
+    ///
+    /// # Return
+    /// Whether the FileSystem is still running or not.
+    pub fn DokanIsFileSystemRunning(DokanInstance: DOKAN_HANDLE) -> BOOL;
 
     /// Get the version of Dokan.
     ///
