@@ -113,4 +113,11 @@ extern "stdcall" {
         DokanOptions: PDOKAN_OPTIONS,
         DokanOperations: PDOKAN_OPERATIONS,
     ) -> DokanMainResult;
+
+    /// Get the version of Dokan.
+    ///
+    /// The returned ULONG is the version number without the dots.
+    ///# Returns
+    /// The version of Dokan
+    pub fn DokanVersion() -> ULONG;
 }
