@@ -17,6 +17,8 @@ pub type LPCWSTR = PCWSTR;
 pub type DWORD = u32;
 pub type WCHAR = u16;
 pub type PULONG = *mut ULONG;
+pub type PVOID = *mut std::os::raw::c_void;
+pub type UCHAR = u8;
 
 pub type DokanMainResult = std::os::raw::c_int;
 
@@ -104,6 +106,55 @@ impl Default for DOKAN_OPTIONS {
     }
 }
 
+pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
+
+/// Dokan file information on the current operation.
+#[repr(C)]
+pub struct DOKAN_FILE_INFO {
+    /// Context that can be used to carry information between operations.
+    ///
+    /// The context can carry whatever type like `HANDLE`, struct, int,
+    /// internal reference that will help the implementation understand the request context of the event.
+    pub Context: ULONG64,
+
+    /// Reserved. Used internally by Dokan library. Never modify.
+    pub DokanContext: ULONG64,
+
+    /// A pointer to DOKAN_OPTIONS which was passed to [DokanMain] or [DokanCreateFileSystem].
+    pub DokanOptions: PDOKAN_OPTIONS,
+
+    /// Reserved. Used internally by Dokan library. Never modify.
+    ///
+    /// If the processing for the event requires extra data to be associated with it
+    /// then a pointer to that data can be placed here
+    pub ProcessingContext: PVOID,
+
+    /// Process ID for the thread that originally requested a given I/O operation.
+    pub ProcessId: ULONG,
+
+    /// Requesting a directory file.
+    ///
+    /// Must be set in [DOKAN_OPERATIONS].ZwCreateFile if the file appears to be a folder.
+    pub IsDirectory: UCHAR,
+
+    /// Flag if the file has to be deleted during DOKAN_OPERATIONS. Cleanup event.
+    pub DeleteOnClose: UCHAR,
+
+    /// Read or write is paging IO.
+    pub PagingIo: UCHAR,
+
+    /// Read or write is synchronous IO.
+    pub SynchronousIo: UCHAR,
+
+    /// Read or write directly from data source without cache
+    pub Nocache: UCHAR,
+
+    /// If `TRUE`, write to the current end of file instead of using the Offset parameter.
+    pub WriteToEndOfFile: UCHAR,
+}
+
+pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
+
 /// Dokan Mount point information
 #[repr(C)]
 pub struct DOKAN_MOUNT_POINT_INFO {
@@ -123,9 +174,7 @@ pub struct DOKAN_MOUNT_POINT_INFO {
 
 pub type PDOKAN_MOUNT_POINT_INFO = *mut DOKAN_MOUNT_POINT_INFO;
 
-pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
 pub type PDOKAN_OPERATIONS = *mut std::os::raw::c_void;
-pub type PDOKAN_FILE_INFO = *mut std::os::raw::c_void;
 
 extern "stdcall" {
     /// Initialize all required Dokan internal resources.
