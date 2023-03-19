@@ -8,7 +8,7 @@ use std::sync::Once;
 
 /// Initialize the library, if needed.
 ///
-/// If not called, this will be called automatically before any library function.
+/// If not called, this will be called automatically before any library functions.
 pub fn init() {
     static INIT: Once = Once::new();
     INIT.call_once(|| unsafe {
@@ -33,16 +33,16 @@ pub fn driver_version() -> u32 {
 /// Unmount the drive from the given drive letter.
 ///
 /// # Panics
-/// Panics if the given char cannot fit in a u16.
+/// Panics if the given char cannot fit in a u8.
 ///
 /// # Returns
 /// Returns true if successful.
 pub fn unmount(drive_letter: char) -> bool {
     init();
 
-    let drive_letter: u16 = u32::from(drive_letter)
+    let drive_letter: u8 = u32::from(drive_letter)
         .try_into()
-        .expect("`drive_letter` cannot fit in a `u16`");
+        .expect("`drive_letter` cannot fit in a `u8`");
 
     unsafe { sys::DokanUnmount(drive_letter) == sys::TRUE }
 }
