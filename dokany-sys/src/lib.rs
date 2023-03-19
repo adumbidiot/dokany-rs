@@ -84,6 +84,12 @@ pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
 pub type PDOKAN_OPERATIONS = std::os::raw::c_void;
 
 extern "stdcall" {
+    /// Initialize all required Dokan internal resources.
+    ///
+    /// This needs to be called only once before trying to use [DokanMain] or [DokanCreateFileSystem] for the first time.
+    /// Otherwise both will fail and raise an exception.
+    pub fn DokanInit();
+
     /// Mount a new Dokan Volume.
     ///
     /// This function block until the device is unmounted.
