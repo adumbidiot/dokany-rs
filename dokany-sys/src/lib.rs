@@ -23,6 +23,9 @@ pub type PULONG = *mut ULONG;
 pub type PVOID = *mut std::os::raw::c_void;
 pub type UCHAR = u8;
 pub type ACCESS_MASK = FILE_ACCESS_FLAGS;
+pub type LPVOID = PVOID;
+pub type LPDWORD = *mut DWORD;
+pub type LONGLONG = i64;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -225,6 +228,14 @@ pub type ZwCreateFileCallback = extern "stdcall" fn(
 pub type CleanupCallback = extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
 pub type CloseFileCallback =
     extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
+pub type ReadFileCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    Buffer: LPVOID,
+    BufferLength: DWORD,
+    ReadLength: LPDWORD,
+    Offset: LONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -304,6 +315,30 @@ pub struct DOKAN_OPERATIONS {
     /// `FileName`: File path requested by the Kernel on the FileSystem.
     /// `DokanFileInfo`: Information about the file or directory.
     pub CloseFile: Option<CloseFileCallback>,
+
+    /// ReadFile Dokan API callback
+    ///
+    /// ReadFile callback on the file previously opened in DOKAN_OPERATIONS.ZwCreateFile.
+    /// It can be called by different threads at the same time, so the read/context has to be thread safe.
+    ///
+    /// When apps make use of memory mapped files, DOKAN_OPERATIONS.WriteFile or DOKAN_OPERATIONS.ReadFile
+    /// functions may be invoked after DOKAN_OPERATIONS.Cleanup in order to complete the I/O operations.
+    /// The file system application should also properly work in this case.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `Buffer`: Read buffer that has to be filled with the read result.
+    /// `BufferLength`: Buffer length and read size to continue with.
+    /// `ReadLength`: Total data size that has been read.
+    /// `Offset`: Offset from where the read has to be continued.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See WriteFile
+    pub ReadFile: Option<ReadFileCallback>,
 }
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
