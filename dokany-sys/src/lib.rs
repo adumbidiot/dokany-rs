@@ -90,6 +90,12 @@ extern "stdcall" {
     /// Otherwise both will fail and raise an exception.
     pub fn DokanInit();
 
+    /// Release all allocated resources by [DokanInit] when they are no longer needed.
+    ///
+    /// This should be called when the application no longer expects to create a new FileSystem with
+    /// [DokanMain] or [DokanCreateFileSystem] and after all devices are unmount.
+    pub fn DokanShutdown();
+
     /// Mount a new Dokan Volume.
     ///
     /// This function block until the device is unmounted.
