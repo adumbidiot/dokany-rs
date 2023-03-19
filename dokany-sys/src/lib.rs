@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(non_camel_case_types)]
 
 pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
@@ -9,9 +10,32 @@ pub type ULONG = u32;
 pub type ULONG64 = u64;
 pub type LPCWSTR = PCWSTR;
 
+pub type DokanMainResult = std::os::raw::c_int;
+
+/// Dokan mount succeed.
+pub const DOKAN_SUCCESS: DokanMainResult = 0;
+/// Dokan mount error.
+pub const DOKAN_ERROR: DokanMainResult = -1;
+/// Dokan mount failed - Bad drive letter.
+pub const DOKAN_DRIVE_LETTER_ERROR: DokanMainResult = -2;
+/// Dokan mount failed - Driver answer that something is wrong.
+pub const DOKAN_DRIVER_INSTALL_ERROR: DokanMainResult = -3;
+/// Dokan mount failed - Driver answer that something is wrong.
+pub const DOKAN_START_ERROR: DokanMainResult = -3;
+/// Dokan mount failed.
+/// Can't assign a drive letter or mount point.
+/// Probably already used by another volume.
+pub const DOKAN_MOUNT_ERROR: DokanMainResult = -5;
+/// Dokan mount failed.
+/// Mount point is invalid.
+pub const DOKAN_MOUNT_POINT_ERROR: DokanMainResult = -6;
+/// Dokan mount failed.
+/// Requested an incompatible version.
+pub const DOKAN_VERSION_ERROR: DokanMainResult = -7;
+
 /// This is arbitrary. There isn't really an absolute max, but we marshal it in
 /// a fixed-size buffer.
-const VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE: usize = 1024 * 16;
+pub const VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE: usize = 1024 * 16;
 
 /// Dokan mount options used to describe Dokan device behavior.
 #[repr(C)]
@@ -54,4 +78,27 @@ pub struct DOKAN_OPTIONS {
     ///
     /// See <a href="https://docs.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-initializesecuritydescriptor">InitializeSecurityDescriptor</a>
     pub VolumeSecurityDescriptor: [CHAR; VOLUME_SECURITY_DESCRIPTOR_MAX_SIZE],
+}
+
+pub type PDOKAN_OPTIONS = *mut DOKAN_OPTIONS;
+pub type PDOKAN_OPERATIONS = std::os::raw::c_void;
+
+extern "stdcall" {
+    /// Mount a new Dokan Volume.
+    ///
+    /// This function block until the device is unmounted.
+    /// If the mount fails, it will directly return a \ref DokanMainResult error.
+    ///
+    /// See [DokanCreateFileSystem] to create mount Dokan Volume asynchronously.
+    ///
+    /// # Arguments
+    /// `DokanOptions`: a [DOKAN_OPTIONS] that describe the mount.
+    /// `DokanOperations`: Instance of [`DOKAN_OPERATIONS`] that will be called for each request made by the kernel.
+    ///
+    /// # Returns
+    /// [DokanMainResult] status.
+    pub fn DokanMain(
+        DokanOptions: PDOKAN_OPTIONS,
+        DokanOperations: PDOKAN_OPERATIONS,
+    ) -> DokanMainResult;
 }
