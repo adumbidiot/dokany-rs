@@ -9,7 +9,9 @@ pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
 pub use windows_sys::Win32::Foundation::FALSE;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
+pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::TRUE;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
 
 pub type USHORT = u16;
 pub type ULONG = u32;
@@ -20,6 +22,7 @@ pub type WCHAR = u16;
 pub type PULONG = *mut ULONG;
 pub type PVOID = *mut std::os::raw::c_void;
 pub type UCHAR = u8;
+pub type ACCESS_MASK = FILE_ACCESS_FLAGS;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -207,6 +210,19 @@ pub struct DOKAN_FILE_INFO {
     pub WriteToEndOfFile: UCHAR,
 }
 
+pub type PDOKAN_IO_SECURITY_CONTEXT = *mut std::os::raw::c_void;
+
+pub type ZwCreateFileCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    SecurityContext: PDOKAN_IO_SECURITY_CONTEXT,
+    DesiredAccess: ACCESS_MASK,
+    FileAttributes: ULONG,
+    ShareAccess: ULONG,
+    CreateDisposition: ULONG,
+    CreateOptions: ULONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
+
 /// Dokan API callbacks interface
 ///
 /// DOKAN_OPERATIONS is a struct of callbacks that describe all Dokan API operations
@@ -219,7 +235,43 @@ pub struct DOKAN_FILE_INFO {
 // if supporting one of them is not desired. Be aware that returning such values to important callbacks
 /// such as DOKAN_OPERATIONS.ZwCreateFile / DOKAN_OPERATIONS.ReadFile / ... would make the filesystem not work or become unstable.
 #[repr(C)]
-pub struct DOKAN_OPERATIONS {}
+pub struct DOKAN_OPERATIONS {
+    /// CreateFile Dokan API callback
+    ///
+    /// CreateFile is called each time a request is made on a file system object.
+    ///
+    /// In case `OPEN_ALWAYS` & `CREATE_ALWAYS` are successfully opening an
+    /// existing file, `STATUS_OBJECT_NAME_COLLISION` should be returned instead of `STATUS_SUCCESS`.
+    /// This will inform Dokan that the file has been opened and not created during the request.
+    ///
+    /// If the file is a directory, CreateFile is also called.
+    /// In this case, CreateFile should return `STATUS_SUCCESS` when that directory
+    /// can be opened and DOKAN_FILE_INFO.IsDirectory has to be set to `TRUE`.
+    /// On the other hand, if DOKAN_FILE_INFO.IsDirectory is set to `TRUE`
+    /// but the path targets a file, `STATUS_NOT_A_DIRECTORY` must be returned.
+    ///
+    /// DOKAN_FILE_INFO.Context can be used to store Data (like `HANDLE`)
+    /// that can be retrieved in all other requests related to the Context.
+    /// To avoid memory leak, Context needs to be released in DOKAN_OPERATIONS.Cleanup.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `SecurityContext`: SecurityContext, see https://msdn.microsoft.com/en-us/library/windows/hardware/ff550613(v=vs.85).aspx
+    /// `DesiredAccess`: Specifies an <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff540466(v=vs.85).aspx">ACCESS_MASK</a> value that determines the requested access to the object.
+    /// `FileAttributes`: Specifies one or more FILE_ATTRIBUTE_XXX flags, which represent the file attributes to set if a file is created or overwritten.
+    /// `ShareAccess`: Type of share access, which is specified as zero or any combination of FILE_SHARE_* flags.
+    /// `CreateDisposition`: Specifies the action to perform if the file does or does not exist.
+    /// `CreateOptions`: Specifies the options to apply when the driver creates or opens the file.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// <a href="https://msdn.microsoft.com/en-us/library/windows/hardware/ff566424(v=vs.85).aspx">See ZwCreateFile for more information about the parameters of this callback (MSDN).</a>
+    /// DokanMapKernelToUserCreateFileFlags
+    pub ZwCreateFile: Option<ZwCreateFileCallback>,
+}
 
 pub type PDOKAN_FILE_INFO = *mut DOKAN_FILE_INFO;
 

@@ -44,7 +44,7 @@ pub fn unmount(drive_letter: char) -> bool {
         .try_into()
         .expect("`drive_letter` cannot fit in a `u8`");
 
-    unsafe { sys::DokanUnmount(drive_letter) == sys::TRUE }
+    unsafe { sys::DokanUnmount(drive_letter.into()) == sys::TRUE }
 }
 
 /// Shutdown the api and release all resources.
