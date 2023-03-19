@@ -123,7 +123,7 @@ extern "stdcall" {
     ///
     /// # Arguments
     /// `DokanOptions`: a [DOKAN_OPTIONS] that describe the mount.
-    /// `DokanOperations`: Instance of [`DOKAN_OPERATIONS`] that will be called for each request made by the kernel.
+    /// `DokanOperations`: Instance of [DOKAN_OPERATIONS] that will be called for each request made by the kernel.
     ///
     /// # Returns
     /// [DokanMainResult] status.
@@ -175,6 +175,14 @@ extern "stdcall" {
         DokanInstance: DOKAN_HANDLE,
         dwMilliseconds: DWORD,
     ) -> DWORD;
+
+    /// Unmount the Dokan instance.
+    ///
+    /// Unmount and wait until all resources of the DokanInstance are released.
+    ///
+    /// # Arguments
+    /// `DokanInstance`: The dokan mount context created by [DokanCreateFileSystem].
+    pub fn DokanCloseHandle(DokanInstance: DOKAN_HANDLE);
 
     /// Get the version of Dokan.
     ///
