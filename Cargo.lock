@@ -3,6 +3,13 @@
 version = 3
 
 [[package]]
+name = "dokany"
+version = "0.0.0"
+dependencies = [
+ "dokany-sys",
+]
+
+[[package]]
 name = "dokany-sys"
 version = "0.0.0"
 dependencies = [

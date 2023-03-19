@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
+pub use std::os::raw::c_int;
 pub use std::os::windows::raw::HANDLE;
 pub use windows_sys::core::PCWSTR;
 pub use windows_sys::Win32::Foundation::BOOL;
@@ -20,7 +21,7 @@ pub type PULONG = *mut ULONG;
 pub type PVOID = *mut std::os::raw::c_void;
 pub type UCHAR = u8;
 
-pub type DokanMainResult = std::os::raw::c_int;
+pub type DokanMainResult = c_int;
 
 /// Dokan mount succeed.
 pub const DOKAN_SUCCESS: DokanMainResult = 0;
@@ -28,18 +29,21 @@ pub const DOKAN_SUCCESS: DokanMainResult = 0;
 pub const DOKAN_ERROR: DokanMainResult = -1;
 /// Dokan mount failed - Bad drive letter.
 pub const DOKAN_DRIVE_LETTER_ERROR: DokanMainResult = -2;
-/// Dokan mount failed - Driver answer that something is wrong.
+/// Dokan mount failed - Can't install driver.
 pub const DOKAN_DRIVER_INSTALL_ERROR: DokanMainResult = -3;
 /// Dokan mount failed - Driver answer that something is wrong.
-pub const DOKAN_START_ERROR: DokanMainResult = -3;
+pub const DOKAN_START_ERROR: DokanMainResult = -4;
 /// Dokan mount failed.
+///
 /// Can't assign a drive letter or mount point.
 /// Probably already used by another volume.
 pub const DOKAN_MOUNT_ERROR: DokanMainResult = -5;
 /// Dokan mount failed.
+///
 /// Mount point is invalid.
 pub const DOKAN_MOUNT_POINT_ERROR: DokanMainResult = -6;
 /// Dokan mount failed.
+///
 /// Requested an incompatible version.
 pub const DOKAN_VERSION_ERROR: DokanMainResult = -7;
 
