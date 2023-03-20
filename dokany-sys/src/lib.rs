@@ -34,6 +34,8 @@ pub type LONGLONG = i64;
 pub type LPCVOID = *const c_void;
 pub type LPBY_HANDLE_FILE_INFORMATION = *mut BY_HANDLE_FILE_INFORMATION;
 pub type PWIN32_FIND_DATAW = *mut WIN32_FIND_DATAW;
+pub type ULONGLONG = u64;
+pub type PULONGLONG = *mut u64;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -320,6 +322,12 @@ pub type UnlockFileCallback = extern "stdcall" fn(
     FileName: LPCWSTR,
     ByteOffset: LONGLONG,
     Length: LONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
+pub type GetDiskFreeSpaceCallback = extern "stdcall" fn(
+    FreeBytesAvailable: PULONGLONG,
+    TotalNumberOfBytes: PULONGLONG,
+    TotalNumberOfFreeBytes: PULONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 
@@ -682,6 +690,31 @@ pub struct DOKAN_OPERATIONS {
     /// # Return
     /// See LockFile
     pub UnlockFile: Option<UnlockFileCallback>,
+
+    /// GetDiskFreeSpace Dokan API callback
+    ///
+    /// Retrieves information about the amount of space that is available on a disk volume.
+    /// It consits of the total amount of space, the total amount of free space, and
+    // the total amount of free space available to the user that is associated with the calling thread.
+    ///
+    /// Neither GetDiskFreeSpace nor `GetVolumeInformation`
+    /// save the DOKAN_FILE_INFO.Context.
+    /// Before these methods are called, \ref ZwCreateFile may not be called.
+    /// (ditto [CloseFile] and [Cleanup])
+    ///
+    /// # Arguments
+    /// FreeBytesAvailable Amount of available space.
+    /// `TotalNumberOfBytes`: Total size of storage space
+    /// `TotalNumberOfFreeBytes`: Amount of free space
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or \c NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa364937(v=vs.85).aspx"> GetDiskFreeSpaceEx function (MSDN)</a>
+    /// See GetVolumeInformation
+    pub GetDiskFreeSpace: Option<GetDiskFreeSpaceCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
