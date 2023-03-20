@@ -357,6 +357,13 @@ pub type GetFileSecurityCallback = extern "stdcall" fn(
     LengthNeeded: PULONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type SetFileSecurityCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    SecurityInformation: PSECURITY_INFORMATION,
+    SecurityDescriptor: PSECURITY_DESCRIPTOR,
+    BufferLength: ULONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -838,6 +845,26 @@ pub struct DOKAN_OPERATIONS {
     /// See SetFileSecurity
     /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa446639(v=vs.85).aspx">GetFileSecurity function (MSDN)</a>
     pub GetFileSecurity: Option<GetFileSecurityCallback>,
+
+    /// SetFileSecurity Dokan API callback
+    ///
+    /// Sets the security of a file or directory object.
+    ///
+    /// Supported since version 0.6.0. The version must be specified in `DOKAN_OPTIONS.Version`.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `SecurityInformation`: Structure that identifies the contents of the security descriptor pointed by \a SecurityDescriptor param.
+    /// `SecurityDescriptor`: A pointer to a SECURITY_DESCRIPTOR structure.
+    /// `BufferLength`: Specifies the size, in bytes, of the buffer.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    /// References
+    /// See GetFileSecurity
+    /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa379577(v=vs.85).aspx">SetFileSecurity function (MSDN)</a>
+    pub SetFileSecurity: Option<SetFileSecurityCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
