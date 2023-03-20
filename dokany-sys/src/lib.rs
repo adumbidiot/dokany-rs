@@ -14,6 +14,7 @@ pub use windows_sys::Win32::Foundation::FILETIME;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::TRUE;
+pub use windows_sys::Win32::Security::SECURITY_DESCRIPTOR;
 pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;
 pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
 pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
@@ -38,6 +39,9 @@ pub type PWIN32_FIND_DATAW = *mut WIN32_FIND_DATAW;
 pub type ULONGLONG = u64;
 pub type PULONGLONG = *mut u64;
 pub type LPWSTR = PWSTR;
+pub type PSECURITY_DESCRIPTOR = *mut SECURITY_DESCRIPTOR;
+pub type SECURITY_INFORMATION = DWORD;
+pub type PSECURITY_INFORMATION = *mut SECURITY_INFORMATION;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -345,6 +349,14 @@ pub type GetVolumeInformationCallback = extern "stdcall" fn(
 pub type MountedCallback =
     extern "stdcall" fn(MountPoint: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 pub type Unmounted = extern "stdcall" fn(DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type GetFileSecurityCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    SecurityInformation: PSECURITY_INFORMATION,
+    SecurityDescriptor: PSECURITY_DESCRIPTOR,
+    BufferLength: ULONG,
+    LengthNeeded: PULONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -801,6 +813,31 @@ pub struct DOKAN_OPERATIONS {
     /// # References
     /// See Mounted
     pub Unmounted: Option<Unmounted>,
+
+    /// GetFileSecurity Dokan API callback
+    ///
+    /// Get specified information about the security of a file or directory.
+    ///
+    /// Return `STATUS_NOT_IMPLEMENTED` to let dokan library build a sddl of the current process user with authenticate user rights for context menu.
+    /// Return `STATUS_BUFFER_OVERFLOW` if buffer size is too small.
+    ///
+    /// Supported since version 0.6.0. The version must be specified in `DOKAN_OPTIONS.Version`.
+    ///
+    /// # Parameters
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `SecurityInformation`: A SECURITY_INFORMATION value that identifies the security information being requested.
+    /// `SecurityDescriptor`: A pointer to a buffer that receives a copy of the security descriptor of the requested file.
+    /// `BufferLength`: Specifies the size, in bytes, of the buffer.
+    /// `LengthNeeded`: A pointer to the variable that receives the number of bytes necessary to store the complete security descriptor.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See SetFileSecurity
+    /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa446639(v=vs.85).aspx">GetFileSecurity function (MSDN)</a>
+    pub GetFileSecurity: Option<GetFileSecurityCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
