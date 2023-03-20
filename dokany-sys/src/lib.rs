@@ -18,6 +18,7 @@ pub use windows_sys::Win32::Security::SECURITY_DESCRIPTOR;
 pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;
 pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
 pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
+pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_STREAM_DATA;
 
 // Primitives
 pub type USHORT = u16;
@@ -42,6 +43,7 @@ pub type LPWSTR = PWSTR;
 pub type PSECURITY_DESCRIPTOR = *mut SECURITY_DESCRIPTOR;
 pub type SECURITY_INFORMATION = DWORD;
 pub type PSECURITY_INFORMATION = *mut SECURITY_INFORMATION;
+pub type PWIN32_FIND_STREAM_DATA = *mut WIN32_FIND_STREAM_DATA;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -237,7 +239,13 @@ pub type PDOKAN_IO_SECURITY_CONTEXT = *mut c_void;
 ///
 /// # Return
 /// 1 if buffer is full, otherwise 0 (currently it never returns 1)
-pub type PFillFindData = extern "stdcall" fn(PWIN32_FIND_DATAW, PDOKAN_FILE_INFO) -> c_int;
+pub type PFillFindData = Option<extern "stdcall" fn(PWIN32_FIND_DATAW, PDOKAN_FILE_INFO) -> c_int>;
+
+/// FillFindStreamData Used to add an entry in FindStreams
+///
+/// # Return
+/// `FALSE` if the buffer is full, otherwise TRUE
+pub type PFillFindStreamData = Option<extern "stdcall" fn(PWIN32_FIND_STREAM_DATA, PVOID) -> BOOL>;
 
 pub type ZwCreateFileCallback = extern "stdcall" fn(
     FileName: LPCWSTR,
@@ -362,6 +370,12 @@ pub type SetFileSecurityCallback = extern "stdcall" fn(
     SecurityInformation: PSECURITY_INFORMATION,
     SecurityDescriptor: PSECURITY_DESCRIPTOR,
     BufferLength: ULONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
+pub type FindStreamsCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    FillFindStreamData: PFillFindStreamData,
+    FindStreamContext: PVOID,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 
@@ -865,6 +879,23 @@ pub struct DOKAN_OPERATIONS {
     /// See GetFileSecurity
     /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa379577(v=vs.85).aspx">SetFileSecurity function (MSDN)</a>
     pub SetFileSecurity: Option<SetFileSecurityCallback>,
+
+    /// FindStreams Dokan API callback
+    ///
+    /// Retrieve all NTFS Streams informations on the file.
+    /// This is only called if `DOKAN_OPTION_ALT_STREAM` is enabled.
+    ///
+    /// Supported since version 0.8.0. The version must be specified in \ref DOKAN_OPTIONS.Version.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `FillFindStreamData`: Callback that has to be called with PWIN32_FIND_STREAM_DATA that contain stream information.
+    /// `FindStreamContext`: Context for the event to pass to the callback FillFindStreamData.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub FindStreams: Option<FindStreamsCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
