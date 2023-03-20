@@ -5,6 +5,7 @@ pub use std::os::raw::c_int;
 pub use std::os::raw::c_void;
 pub use std::os::windows::raw::HANDLE;
 pub use windows_sys::core::PCWSTR;
+pub use windows_sys::core::PWSTR;
 pub use windows_sys::Win32::Foundation::BOOL;
 pub use windows_sys::Win32::Foundation::BOOLEAN;
 pub use windows_sys::Win32::Foundation::CHAR;
@@ -36,6 +37,7 @@ pub type LPBY_HANDLE_FILE_INFORMATION = *mut BY_HANDLE_FILE_INFORMATION;
 pub type PWIN32_FIND_DATAW = *mut WIN32_FIND_DATAW;
 pub type ULONGLONG = u64;
 pub type PULONGLONG = *mut u64;
+pub type LPWSTR = PWSTR;
 
 pub type DokanOptionFlag = ULONG;
 
@@ -328,6 +330,16 @@ pub type GetDiskFreeSpaceCallback = extern "stdcall" fn(
     FreeBytesAvailable: PULONGLONG,
     TotalNumberOfBytes: PULONGLONG,
     TotalNumberOfFreeBytes: PULONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
+pub type GetVolumeInformationCallback = extern "stdcall" fn(
+    VolumeNameBuffer: LPWSTR,
+    VolumeNameSize: DWORD,
+    VolumeSerialNumber: LPDWORD,
+    MaximumComponentLength: LPDWORD,
+    FileSystemFlags: LPDWORD,
+    FileSystemNameBuffer: LPWSTR,
+    FileSystemNameSize: DWORD,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 
@@ -715,6 +727,45 @@ pub struct DOKAN_OPERATIONS {
     /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa364937(v=vs.85).aspx"> GetDiskFreeSpaceEx function (MSDN)</a>
     /// See GetVolumeInformation
     pub GetDiskFreeSpace: Option<GetDiskFreeSpaceCallback>,
+
+    /// GetVolumeInformation Dokan API callback
+    ///
+    /// Retrieves information about the file system and volume associated with the specified root directory.
+    ///
+    /// Neither GetVolumeInformation nor GetDiskFreeSpace
+    /// save the `DOKAN_FILE_INFO#Context`.
+    /// Before these methods are called, [ZwCreateFile] may not be called.
+    /// (ditto [CloseFile] and [Cleanup])
+    ///
+    /// VolumeName length can be anything that fit in the provided buffer.
+    /// But some Windows component expect it to be no longer than 32 characters
+    /// that why it is recommended to set a value under this limit.
+    ///
+    /// FileSystemName could be anything up to 10 characters.
+    /// But Windows check few feature availability based on file system name.
+    /// For this, it is recommended to set NTFS or FAT here.
+    ///
+    /// `FILE_READ_ONLY_VOLUME` is automatically added to the
+    /// FileSystemFlags if `DOKAN_OPTION_WRITE_PROTECT` was
+    /// specified in DOKAN_OPTIONS when the volume was mounted.
+    ///
+    /// # Arguments
+    /// `VolumeNameBuffer`: A pointer to a buffer that receives the name of a specified volume.
+    /// `VolumeNameSize`: The length of a volume name buffer.
+    /// `VolumeSerialNumber`: A pointer to a variable that receives the volume serial number.
+    /// `MaximumComponentLength`: A pointer to a variable that receives the maximum length.
+    /// `FileSystemFlags`: A pointer to a variable that receives flags associated with the specified file system.
+    /// `FileSystemNameBuffer`: A pointer to a buffer that receives the name of the file system.
+    /// `FileSystemNameSize`: The length of the file system name buffer.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993(v=vs.85).aspx"> GetVolumeInformation function (MSDN)</a>
+    /// See GetDiskFreeSpace
+    pub GetVolumeInformation: Option<GetVolumeInformationCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
