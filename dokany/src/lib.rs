@@ -3,6 +3,7 @@ mod operations;
 mod option_flags;
 mod options;
 // mod filesystem;
+// mod wide_string;
 
 pub use self::main_result::MainResult;
 pub(crate) use self::operations::OPERATIONS;
@@ -57,7 +58,7 @@ impl<'a> AsWide for &'a Vec<u16> {
 /// The trait a type must implement to serve as a filesystem
 pub trait Filesystem: Send + Sync + 'static {
     /// Called when the filesystem is mounted
-    fn mounted(&self) -> sys::NTSTATUS {
+    fn mounted(&self, _mount_point: &[u16]) -> sys::NTSTATUS {
         sys::STATUS_SUCCESS
     }
 }
@@ -141,12 +142,14 @@ pub unsafe fn shutdown() {
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::ffi::OsString;
+    use std::os::windows::ffi::OsStringExt;
 
     struct SimpleFilesystem;
 
     impl Filesystem for SimpleFilesystem {
-        fn mounted(&self) -> sys::NTSTATUS {
-            println!("Mounted");
+        fn mounted(&self, mounted: &[u16]) -> sys::NTSTATUS {
+            println!("Mounted at {:?}", OsString::from_wide(mounted));
 
             sys::STATUS_SUCCESS
         }
