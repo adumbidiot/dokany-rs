@@ -239,15 +239,17 @@ pub type PDOKAN_IO_SECURITY_CONTEXT = *mut c_void;
 ///
 /// # Return
 /// 1 if buffer is full, otherwise 0 (currently it never returns 1)
-pub type PFillFindData = Option<extern "stdcall" fn(PWIN32_FIND_DATAW, PDOKAN_FILE_INFO) -> c_int>;
+pub type PFillFindData =
+    Option<unsafe extern "stdcall" fn(PWIN32_FIND_DATAW, PDOKAN_FILE_INFO) -> c_int>;
 
 /// FillFindStreamData Used to add an entry in FindStreams
 ///
 /// # Return
 /// `FALSE` if the buffer is full, otherwise TRUE
-pub type PFillFindStreamData = Option<extern "stdcall" fn(PWIN32_FIND_STREAM_DATA, PVOID) -> BOOL>;
+pub type PFillFindStreamData =
+    Option<unsafe extern "stdcall" fn(PWIN32_FIND_STREAM_DATA, PVOID) -> BOOL>;
 
-pub type ZwCreateFileCallback = extern "stdcall" fn(
+pub type ZwCreateFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     SecurityContext: PDOKAN_IO_SECURITY_CONTEXT,
     DesiredAccess: ACCESS_MASK,
@@ -257,10 +259,11 @@ pub type ZwCreateFileCallback = extern "stdcall" fn(
     CreateOptions: ULONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type CleanupCallback = extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
+pub type CleanupCallback =
+    unsafe extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
 pub type CloseFileCallback =
-    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
-pub type ReadFileCallback = extern "stdcall" fn(
+    unsafe extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO);
+pub type ReadFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     Buffer: LPVOID,
     BufferLength: DWORD,
@@ -268,7 +271,7 @@ pub type ReadFileCallback = extern "stdcall" fn(
     Offset: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type WriteFileCallback = extern "stdcall" fn(
+pub type WriteFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     Buffer: LPCVOID,
     NumberOfBytesToWrite: DWORD,
@@ -277,29 +280,29 @@ pub type WriteFileCallback = extern "stdcall" fn(
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 pub type FlushFileBuffersCallback =
-    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
-pub type GetFileInformationCallback = extern "stdcall" fn(
+    unsafe extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type GetFileInformationCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     Buffer: LPBY_HANDLE_FILE_INFORMATION,
     DokanFileInfo: PDOKAN_FILE_INFO,
 );
-pub type FindFilesCallback = extern "stdcall" fn(
+pub type FindFilesCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     FillFindData: PFillFindData,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type FindFilesWithPatternCallback = extern "stdcall" fn(
+pub type FindFilesWithPatternCallback = unsafe extern "stdcall" fn(
     PathName: LPCWSTR,
     SearchPattern: LPCWSTR,
     FillFindData: PFillFindData,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type SetFileAttributesCallback = extern "stdcall" fn(
+pub type SetFileAttributesCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     FileAttributes: DWORD,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type SetFileTimeCallback = extern "stdcall" fn(
+pub type SetFileTimeCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     CreationTime: *const FILETIME,
     LastAccessTime: *const FILETIME,
@@ -307,44 +310,44 @@ pub type SetFileTimeCallback = extern "stdcall" fn(
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 pub type DeleteFileCallback =
-    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+    unsafe extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 pub type DeleteDirectoryCallback =
-    extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
-pub type MoveFileCallback = extern "stdcall" fn(
+    unsafe extern "stdcall" fn(FileName: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type MoveFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     NewFileName: LPCWSTR,
     ReplaceIfExisting: BOOL,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type SetEndOfFileCallback = extern "stdcall" fn(
+pub type SetEndOfFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     ByteOffset: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type SetAllocationSizeCallback = extern "stdcall" fn(
+pub type SetAllocationSizeCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     AllocSize: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type LockFileCallback = extern "stdcall" fn(
+pub type LockFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     ByteOffset: LONGLONG,
     Length: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type UnlockFileCallback = extern "stdcall" fn(
+pub type UnlockFileCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     ByteOffset: LONGLONG,
     Length: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type GetDiskFreeSpaceCallback = extern "stdcall" fn(
+pub type GetDiskFreeSpaceCallback = unsafe extern "stdcall" fn(
     FreeBytesAvailable: PULONGLONG,
     TotalNumberOfBytes: PULONGLONG,
     TotalNumberOfFreeBytes: PULONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type GetVolumeInformationCallback = extern "stdcall" fn(
+pub type GetVolumeInformationCallback = unsafe extern "stdcall" fn(
     VolumeNameBuffer: LPWSTR,
     VolumeNameSize: DWORD,
     VolumeSerialNumber: LPDWORD,
@@ -355,9 +358,9 @@ pub type GetVolumeInformationCallback = extern "stdcall" fn(
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
 pub type MountedCallback =
-    extern "stdcall" fn(MountPoint: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
-pub type Unmounted = extern "stdcall" fn(DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
-pub type GetFileSecurityCallback = extern "stdcall" fn(
+    unsafe extern "stdcall" fn(MountPoint: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type Unmounted = unsafe extern "stdcall" fn(DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type GetFileSecurityCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     SecurityInformation: PSECURITY_INFORMATION,
     SecurityDescriptor: PSECURITY_DESCRIPTOR,
@@ -365,14 +368,14 @@ pub type GetFileSecurityCallback = extern "stdcall" fn(
     LengthNeeded: PULONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type SetFileSecurityCallback = extern "stdcall" fn(
+pub type SetFileSecurityCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     SecurityInformation: PSECURITY_INFORMATION,
     SecurityDescriptor: PSECURITY_DESCRIPTOR,
     BufferLength: ULONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
-pub type FindStreamsCallback = extern "stdcall" fn(
+pub type FindStreamsCallback = unsafe extern "stdcall" fn(
     FileName: LPCWSTR,
     FillFindStreamData: PFillFindStreamData,
     FindStreamContext: PVOID,
