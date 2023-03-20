@@ -5,6 +5,7 @@ use std::mem::MaybeUninit;
 
 /// Function trampolines
 pub(crate) static OPERATIONS: sys::DOKAN_OPERATIONS = sys::DOKAN_OPERATIONS {
+    ZwCreateFile: Some(create_file_callback),
     GetVolumeInformation: Some(get_volume_information_callback),
     Mounted: Some(mounted_callback),
     Unmounted: Some(unmounted_callback),
@@ -25,6 +26,28 @@ unsafe fn extract_global_context<'a>(
     let options = &*options;
     debug_assert!(options.GlobalContext != 0);
     &mut *(options.GlobalContext as *mut GlobalContext)
+}
+
+unsafe extern "stdcall" fn create_file_callback(
+    _filename: sys::LPCWSTR,
+    _security_context: sys::PDOKAN_IO_SECURITY_CONTEXT,
+    _desired_access: sys::ACCESS_MASK,
+    _file_attributes: sys::ULONG,
+    _share_access: sys::ULONG,
+    _create_disposition: sys::ULONG,
+    _create_options: sys::ULONG,
+    dokan_file_info: sys::PDOKAN_FILE_INFO,
+) -> sys::NTSTATUS {
+    let result = std::panic::catch_unwind(|| {
+        let global_context = extract_global_context(dokan_file_info);
+
+        global_context.filesystem.create_file()
+    });
+
+    match result {
+        Ok(code) => code,
+        Err(_e) => sys::STATUS_INTERNAL_ERROR,
+    }
 }
 
 unsafe extern "stdcall" fn get_volume_information_callback(

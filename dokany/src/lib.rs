@@ -55,6 +55,11 @@ impl<'a> WriteWideCStringCell<'a> {
 
 /// The trait a type must implement to serve as a filesystem
 pub trait Filesystem: Send + Sync + 'static {
+    /// Called for opening files and directories
+    fn create_file(&self) -> sys::NTSTATUS {
+        sys::STATUS_NOT_IMPLEMENTED
+    }
+
     /// Called for calls to GetVolumeInformation
     fn get_volume_information(
         &self,
@@ -159,10 +164,17 @@ mod test {
     use super::*;
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
+    use std::path::PathBuf;
 
     struct SimpleFilesystem;
 
     impl Filesystem for SimpleFilesystem {
+        fn create_file(&self) -> sys::NTSTATUS {
+            println!("CreateFile");
+
+            sys::STATUS_NOT_IMPLEMENTED
+        }
+
         fn get_volume_information(
             &self,
             mut volume_name: WriteWideCStringCell<'_>,
@@ -187,7 +199,8 @@ mod test {
         }
 
         fn mounted(&self, mounted: &[u16]) -> sys::NTSTATUS {
-            println!("Mounted at {:?}", OsString::from_wide(mounted));
+            let mounted = PathBuf::from(OsString::from_wide(mounted));
+            println!("Mounted at \"{}\"", mounted.display());
             sys::STATUS_SUCCESS
         }
 
