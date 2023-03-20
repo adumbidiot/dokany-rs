@@ -3,6 +3,7 @@ mod main_result;
 mod operations;
 mod option_flags;
 mod options;
+mod wide;
 // mod filesystem;
 // mod wide_string;
 
@@ -11,52 +12,10 @@ pub use self::main_result::MainResult;
 pub(crate) use self::operations::OPERATIONS;
 pub use self::option_flags::OptionFlags;
 pub use self::options::Options;
+pub use self::wide::AsWide;
 pub use dokany_sys as sys;
 use std::mem::MaybeUninit;
 use std::sync::Once;
-
-/// Implemented for types that can be converted into wide char arrays.
-pub trait AsWide {
-    type Iter: Iterator<Item = u16>;
-
-    /// Get an iterator over wide chars.
-    ///
-    /// Depending on where this is passed,
-    /// it is a logic error to have a NUL wide char.
-    fn as_wide(&self) -> Self::Iter;
-}
-
-impl<'a> AsWide for &'a str {
-    type Iter = std::str::EncodeUtf16<'a>;
-
-    fn as_wide(&self) -> Self::Iter {
-        self.encode_utf16()
-    }
-}
-
-impl<'a> AsWide for &'a String {
-    type Iter = std::str::EncodeUtf16<'a>;
-
-    fn as_wide(&self) -> Self::Iter {
-        self.as_str().encode_utf16()
-    }
-}
-
-impl<'a> AsWide for &'a [u16] {
-    type Iter = std::iter::Copied<std::slice::Iter<'a, u16>>;
-
-    fn as_wide(&self) -> Self::Iter {
-        self.iter().copied()
-    }
-}
-
-impl<'a> AsWide for &'a Vec<u16> {
-    type Iter = std::iter::Copied<std::slice::Iter<'a, u16>>;
-
-    fn as_wide(&self) -> Self::Iter {
-        self.iter().copied()
-    }
-}
 
 /// A cell that wraps an unitialzed wide c string buffer, tracking its initialization.
 pub struct WriteWideCStringCell<'a> {
