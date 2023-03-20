@@ -13,6 +13,8 @@ pub use windows_sys::Win32::Foundation::FALSE;
 pub use windows_sys::Win32::Foundation::FILETIME;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
+pub use windows_sys::Win32::Foundation::STATUS_INTERNAL_ERROR;
+pub use windows_sys::Win32::Foundation::STATUS_SUCCESS;
 pub use windows_sys::Win32::Foundation::TRUE;
 pub use windows_sys::Win32::Security::SECURITY_DESCRIPTOR;
 pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;

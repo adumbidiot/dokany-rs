@@ -9,7 +9,6 @@ pub(crate) use self::operations::OPERATIONS;
 pub use self::option_flags::OptionFlags;
 pub use self::options::Options;
 pub use dokany_sys as sys;
-use std::sync::Arc;
 use std::sync::Once;
 
 /// Implemented for types that can be converted into wide char arrays.
@@ -56,7 +55,12 @@ impl<'a> AsWide for &'a Vec<u16> {
 }
 
 /// The trait a type must implement to serve as a filesystem
-pub trait Filesystem: Send + Sync + 'static {}
+pub trait Filesystem: Send + Sync + 'static {
+    /// Called when the filesystem is mounted
+    fn mounted(&self) -> sys::NTSTATUS {
+        sys::STATUS_SUCCESS
+    }
+}
 
 /// Initialize the library, if needed.
 ///
@@ -82,15 +86,30 @@ pub fn driver_version() -> u32 {
     unsafe { sys::DokanDriverVersion() }
 }
 
+pub(crate) struct GlobalContext {
+    pub filesystem: Box<dyn Filesystem>,
+}
+
 /// Mount and run a filesystem from the given options an mount object.
-pub fn main<F>(mut options: Options, _filesystem: Arc<F>) -> Result<(), MainResult>
-where
-    F: Filesystem,
-{
+pub fn main(mut options: Options, filesystem: impl Filesystem) -> Result<(), MainResult> {
+    // Inject the filesystem as context.
+    let context = Box::new(GlobalContext {
+        filesystem: Box::new(filesystem),
+    });
+    let context_ptr = Box::into_raw(context);
+    options.options.GlobalContext = context_ptr as u64;
+
     // Official docs also use a global static, so this is probably safe.
     let operations = &OPERATIONS as *const sys::DOKAN_OPERATIONS as *mut sys::DOKAN_OPERATIONS;
 
-    MainResult(unsafe { sys::DokanMain(&mut options.options, operations) }).into()
+    // Mount, run, unmount.
+    let result = MainResult(unsafe { sys::DokanMain(&mut options.options, operations) });
+
+    // Free context
+    let context = unsafe { Box::from_raw(context_ptr) };
+    drop(context);
+
+    result.into()
 }
 
 /// Unmount the drive from the given drive letter.
@@ -125,7 +144,13 @@ mod test {
 
     struct SimpleFilesystem;
 
-    impl Filesystem for SimpleFilesystem {}
+    impl Filesystem for SimpleFilesystem {
+        fn mounted(&self) -> sys::NTSTATUS {
+            println!("Mounted");
+
+            sys::STATUS_SUCCESS
+        }
+    }
 
     #[test]
     #[ignore]
@@ -138,12 +163,12 @@ mod test {
         println!("Dokan Driver Version: {driver_version}");
 
         let unmount_z = unmount('Z');
-        println!("Unmount Z (no mount): {}", unmount_z);
+        println!("Unmount Z (no mount): {unmount_z}");
 
         let handle = std::thread::spawn(|| {
             std::thread::sleep(std::time::Duration::from_secs(1));
             let unmount_z = unmount('Z');
-            println!("Unmount Z (mount): {}", unmount_z);
+            println!("Unmount Z (mount): {unmount_z}");
 
             assert!(unmount_z);
         });
@@ -153,7 +178,7 @@ mod test {
         options.set_mount_point("Z");
         options.set_option_flags(OptionFlags::MOUNT_MANAGER);
 
-        let simple_filesystem = Arc::new(SimpleFilesystem);
+        let simple_filesystem = SimpleFilesystem;
 
         match main(options, simple_filesystem) {
             Ok(()) => {}
