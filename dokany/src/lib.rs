@@ -61,6 +61,11 @@ pub trait Filesystem: Send + Sync + 'static {
     fn mounted(&self, _mount_point: &[u16]) -> sys::NTSTATUS {
         sys::STATUS_SUCCESS
     }
+
+    /// Called when the filesystem is unmounted
+    fn unmounted(&self) -> sys::NTSTATUS {
+        sys::STATUS_SUCCESS
+    }
 }
 
 /// Initialize the library, if needed.
@@ -150,7 +155,11 @@ mod test {
     impl Filesystem for SimpleFilesystem {
         fn mounted(&self, mounted: &[u16]) -> sys::NTSTATUS {
             println!("Mounted at {:?}", OsString::from_wide(mounted));
+            sys::STATUS_SUCCESS
+        }
 
+        fn unmounted(&self) -> sys::NTSTATUS {
+            println!("Unmounted");
             sys::STATUS_SUCCESS
         }
     }
