@@ -300,6 +300,11 @@ pub type MoveFileCallback = extern "stdcall" fn(
     ReplaceIfExisting: BOOL,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type SetEndOfFileCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    ByteOffset: LONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -598,6 +603,19 @@ pub struct DOKAN_OPERATIONS {
     /// # Return
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub MoveFile: Option<MoveFileCallback>,
+
+    /// SetEndOfFile Dokan API callback
+    ///
+    /// SetEndOfFile is used to truncate or extend a file (physical file size).
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `ByteOffset`: File length to set.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub SetEndOfFile: Option<SetEndOfFileCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
