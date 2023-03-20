@@ -1,19 +1,62 @@
 mod main_result;
+mod operations;
 mod option_flags;
 mod options;
-// mod operations;
 // mod filesystem;
 
 pub use self::main_result::MainResult;
+pub(crate) use self::operations::OPERATIONS;
 pub use self::option_flags::OptionFlags;
 pub use self::options::Options;
 pub use dokany_sys as sys;
 use std::sync::Arc;
 use std::sync::Once;
 
-static OPERATIONS: sys::DOKAN_OPERATIONS = sys::DOKAN_OPERATIONS {
-    ..sys::DOKAN_OPERATIONS::new()
-};
+/// Implemented for types that can be converted into wide char arrays.
+pub trait AsWide {
+    type Iter: Iterator<Item = u16>;
+
+    /// Get an iterator over wide chars.
+    ///
+    /// Depending on where this is passed,
+    /// it is a logic error to have a NUL wide char.
+    fn as_wide(&self) -> Self::Iter;
+}
+
+impl<'a> AsWide for &'a str {
+    type Iter = std::str::EncodeUtf16<'a>;
+
+    fn as_wide(&self) -> Self::Iter {
+        self.encode_utf16()
+    }
+}
+
+impl<'a> AsWide for &'a String {
+    type Iter = std::str::EncodeUtf16<'a>;
+
+    fn as_wide(&self) -> Self::Iter {
+        self.as_str().encode_utf16()
+    }
+}
+
+impl<'a> AsWide for &'a [u16] {
+    type Iter = std::iter::Copied<std::slice::Iter<'a, u16>>;
+
+    fn as_wide(&self) -> Self::Iter {
+        self.iter().copied()
+    }
+}
+
+impl<'a> AsWide for &'a Vec<u16> {
+    type Iter = std::iter::Copied<std::slice::Iter<'a, u16>>;
+
+    fn as_wide(&self) -> Self::Iter {
+        self.iter().copied()
+    }
+}
+
+/// The trait a type must implement to serve as a filesystem
+pub trait Filesystem: Send + Sync + 'static {}
 
 /// Initialize the library, if needed.
 ///
@@ -40,7 +83,10 @@ pub fn driver_version() -> u32 {
 }
 
 /// Mount and run a filesystem from the given options an mount object.
-pub fn main<F>(mut options: Options, _filesystem: Arc<F>) -> Result<(), MainResult> {
+pub fn main<F>(mut options: Options, _filesystem: Arc<F>) -> Result<(), MainResult>
+where
+    F: Filesystem,
+{
     // Official docs also use a global static, so this is probably safe.
     let operations = &OPERATIONS as *const sys::DOKAN_OPERATIONS as *mut sys::DOKAN_OPERATIONS;
 
@@ -77,9 +123,9 @@ pub unsafe fn shutdown() {
 mod test {
     use super::*;
 
-    const MOUNT_POINT: &[u16] = &[b'Z' as u16];
-
     struct SimpleFilesystem;
+
+    impl Filesystem for SimpleFilesystem {}
 
     #[test]
     #[ignore]
@@ -104,7 +150,7 @@ mod test {
 
         let mut options = Options::new();
         options.set_version(209);
-        options.set_mount_point(MOUNT_POINT);
+        options.set_mount_point("Z");
         options.set_option_flags(OptionFlags::MOUNT_MANAGER);
 
         let simple_filesystem = Arc::new(SimpleFilesystem);

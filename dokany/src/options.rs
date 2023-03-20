@@ -1,10 +1,13 @@
 use crate::sys;
+use crate::AsWide;
 use crate::OptionFlags;
 
 /// Options for a filesystem
 pub struct Options {
     /// The ffi options struct
     pub(crate) options: sys::DOKAN_OPTIONS,
+
+    mount_point_buffer: Vec<u16>,
 }
 
 impl Options {
@@ -12,6 +15,8 @@ impl Options {
     pub fn new() -> Self {
         Self {
             options: sys::DOKAN_OPTIONS::new(),
+
+            mount_point_buffer: Vec::new(),
         }
     }
 
@@ -21,8 +26,10 @@ impl Options {
     }
 
     /// Set the mount point
-    pub fn set_mount_point(&mut self, mount_point: &'static [u16]) {
-        self.options.MountPoint = mount_point.as_ptr();
+    pub fn set_mount_point(&mut self, mount_point: impl AsWide) {
+        self.mount_point_buffer = mount_point.as_wide().chain(std::iter::once(0)).collect();
+
+        self.options.MountPoint = self.mount_point_buffer.as_ptr();
     }
 
     /// Set the option flags
