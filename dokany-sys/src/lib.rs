@@ -310,6 +310,12 @@ pub type SetAllocationSizeCallback = extern "stdcall" fn(
     AllocSize: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type LockFileCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    ByteOffset: LONGLONG,
+    Length: LONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -634,6 +640,24 @@ pub struct DOKAN_OPERATIONS {
     /// # Returns
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub SetAllocationSize: Option<SetAllocationSizeCallback>,
+
+    /// LockFile Dokan API callback
+    ///
+    /// Lock file at a specific offset and data length.
+    /// This is only used if [DOKAN_OPTION_FILELOCK_USER_MODE] is enabled.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `ByteOffset`: Offset from where the lock has to be continued.
+    /// `Length`: Data length to lock.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    ///
+    /// # References
+    /// See UnlockFile
+    pub LockFile: Option<LockFileCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
