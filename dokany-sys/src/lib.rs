@@ -342,6 +342,8 @@ pub type GetVolumeInformationCallback = extern "stdcall" fn(
     FileSystemNameSize: DWORD,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type MountedCallback =
+    extern "stdcall" fn(MountPoint: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -766,6 +768,24 @@ pub struct DOKAN_OPERATIONS {
     /// See <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa364993(v=vs.85).aspx"> GetVolumeInformation function (MSDN)</a>
     /// See GetDiskFreeSpace
     pub GetVolumeInformation: Option<GetVolumeInformationCallback>,
+
+    /// Mounted Dokan API callback
+    ///
+    /// Called when Dokan successfully mounts the volume.
+    ///
+    /// If [DOKAN_OPTION_MOUNT_MANAGER] is enabled and the drive letter requested is busy,
+    /// the MountPoint can contain a different drive letter that the mount manager assigned us.
+    ///
+    /// # Arguments
+    /// `MountPoint`: The mount point assign to the instance.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result. The value is currently not used by the library.
+    ///
+    /// # References
+    /// See Unmounted
+    pub Mounted: Option<MountedCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
