@@ -176,7 +176,8 @@ mod test {
             *volume_serial_number = 1337;
             *maximum_component_length = 255;
 
-            *file_system_flags |= FileSystemFlags::UNICODE_ON_DISK;
+            *file_system_flags |=
+                FileSystemFlags::UNICODE_ON_DISK | FileSystemFlags::READ_ONLY_VOLUME;
 
             file_system_name.write("NTFS");
 

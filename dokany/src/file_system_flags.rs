@@ -37,9 +37,9 @@ bitflags::bitflags! {
         /// The specified volume supports the Encrypted File System (EFS). For more information, see File Encryption.
         const SUPPORTS_ENCRYPTION = sys::FILE_SUPPORTS_ENCRYPTION;
         /// The specified volume supports named streams.
-        const FILE_NAMED_STREAMS = sys::FILE_NAMED_STREAMS;
+        const NAMED_STREAMS = sys::FILE_NAMED_STREAMS;
         /// The specified volume is read-only.
-        const FILE_READ_ONLY_VOLUME = sys::FILE_READ_ONLY_VOLUME;
+        const READ_ONLY_VOLUME = sys::FILE_READ_ONLY_VOLUME;
         /// The specified volume supports a single sequential write.
         const SEQUENTIAL_WRITE_ONCE = sys::FILE_SEQUENTIAL_WRITE_ONCE;
         /// The specified volume supports transactions. For more information, see About KTM.
