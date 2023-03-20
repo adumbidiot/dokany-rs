@@ -344,6 +344,7 @@ pub type GetVolumeInformationCallback = extern "stdcall" fn(
 ) -> NTSTATUS;
 pub type MountedCallback =
     extern "stdcall" fn(MountPoint: LPCWSTR, DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
+pub type Unmounted = extern "stdcall" fn(DokanFileInfo: PDOKAN_FILE_INFO) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -786,6 +787,20 @@ pub struct DOKAN_OPERATIONS {
     /// # References
     /// See Unmounted
     pub Mounted: Option<MountedCallback>,
+
+    /// Unmounted Dokan API callback
+    ///
+    ///Called when Dokan is unmounting the volume.
+    ///
+    /// # References
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Return
+    /// `STATUS_SUCCESS` on success or `NTSTATUS` appropriate to the request result. The value is currently not used by the library.
+    ///
+    /// # References
+    /// See Mounted
+    pub Unmounted: Option<Unmounted>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
