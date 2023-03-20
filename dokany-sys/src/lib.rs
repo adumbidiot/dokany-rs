@@ -305,6 +305,11 @@ pub type SetEndOfFileCallback = extern "stdcall" fn(
     ByteOffset: LONGLONG,
     DokanFileInfo: PDOKAN_FILE_INFO,
 ) -> NTSTATUS;
+pub type SetAllocationSizeCallback = extern "stdcall" fn(
+    FileName: LPCWSTR,
+    AllocSize: LONGLONG,
+    DokanFileInfo: PDOKAN_FILE_INFO,
+) -> NTSTATUS;
 
 /// Dokan API callbacks interface
 ///
@@ -616,6 +621,19 @@ pub struct DOKAN_OPERATIONS {
     /// # Return
     /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
     pub SetEndOfFile: Option<SetEndOfFileCallback>,
+
+    /// SetAllocationSize Dokan API callback
+    ///
+    /// SetAllocationSize is used to truncate or extend a file.
+    ///
+    /// # Arguments
+    /// `FileName`: File path requested by the Kernel on the FileSystem.
+    /// `AllocSize`: File length to set.
+    /// `DokanFileInfo`: Information about the file or directory.
+    ///
+    /// # Returns
+    /// `STATUS_SUCCESS` on success or NTSTATUS appropriate to the request result.
+    pub SetAllocationSize: Option<SetAllocationSizeCallback>,
 }
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
