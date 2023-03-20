@@ -900,6 +900,45 @@ pub struct DOKAN_OPERATIONS {
 
 pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
 
+impl DOKAN_OPERATIONS {
+    /// Make a new empty [`DOKAN_OPERATIONS`].
+    pub fn new() -> Self {
+        Self {
+            Cleanup: None,
+            CloseFile: None,
+            DeleteDirectory: None,
+            DeleteFile: None,
+            FindFiles: None,
+            FindFilesWithPattern: None,
+            FindStreams: None,
+            FlushFileBuffers: None,
+            GetDiskFreeSpace: None,
+            GetFileInformation: None,
+            GetFileSecurity: None,
+            GetVolumeInformation: None,
+            LockFile: None,
+            Mounted: None,
+            MoveFile: None,
+            ReadFile: None,
+            SetAllocationSize: None,
+            SetEndOfFile: None,
+            SetFileAttributes: None,
+            SetFileSecurity: None,
+            SetFileTime: None,
+            UnlockFile: None,
+            Unmounted: None,
+            WriteFile: None,
+            ZwCreateFile: None,
+        }
+    }
+}
+
+impl Default for DOKAN_OPERATIONS {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Dokan Mount point information
 #[repr(C)]
 pub struct DOKAN_MOUNT_POINT_INFO {
