@@ -905,7 +905,7 @@ pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
 
 impl DOKAN_OPERATIONS {
     /// Make a new empty [`DOKAN_OPERATIONS`].
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             Cleanup: None,
             CloseFile: None,

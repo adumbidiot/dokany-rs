@@ -1,10 +1,19 @@
 mod main_result;
 mod option_flags;
+mod options;
+// mod operations;
+// mod filesystem;
 
 pub use self::main_result::MainResult;
 pub use self::option_flags::OptionFlags;
+pub use self::options::Options;
 pub use dokany_sys as sys;
+use std::sync::Arc;
 use std::sync::Once;
+
+static OPERATIONS: sys::DOKAN_OPERATIONS = sys::DOKAN_OPERATIONS {
+    ..sys::DOKAN_OPERATIONS::new()
+};
 
 /// Initialize the library, if needed.
 ///
@@ -28,6 +37,14 @@ pub fn driver_version() -> u32 {
     init();
 
     unsafe { sys::DokanDriverVersion() }
+}
+
+/// Mount and run a filesystem from the given options an mount object.
+pub fn main<F>(mut options: Options, _filesystem: Arc<F>) -> Result<(), MainResult> {
+    // Official docs also use a global static, so this is probably safe.
+    let operations = &OPERATIONS as *const sys::DOKAN_OPERATIONS as *mut sys::DOKAN_OPERATIONS;
+
+    MainResult(unsafe { sys::DokanMain(&mut options.options, operations) }).into()
 }
 
 /// Unmount the drive from the given drive letter.
@@ -60,6 +77,10 @@ pub unsafe fn shutdown() {
 mod test {
     use super::*;
 
+    const MOUNT_POINT: &[u16] = &[b'Z' as u16];
+
+    struct SimpleFilesystem;
+
     #[test]
     #[ignore]
     fn test() {
@@ -71,7 +92,31 @@ mod test {
         println!("Dokan Driver Version: {driver_version}");
 
         let unmount_z = unmount('Z');
-        println!("Unmount Z: {}", unmount_z);
+        println!("Unmount Z (no mount): {}", unmount_z);
+
+        let handle = std::thread::spawn(|| {
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            let unmount_z = unmount('Z');
+            println!("Unmount Z (mount): {}", unmount_z);
+
+            assert!(unmount_z);
+        });
+
+        let mut options = Options::new();
+        options.set_version(209);
+        options.set_mount_point(MOUNT_POINT);
+        options.set_option_flags(OptionFlags::MOUNT_MANAGER);
+
+        let simple_filesystem = Arc::new(SimpleFilesystem);
+
+        match main(options, simple_filesystem) {
+            Ok(()) => {}
+            Err(e) => {
+                panic!("{e}");
+            }
+        }
+
+        handle.join().unwrap();
 
         unsafe { shutdown() }
     }
