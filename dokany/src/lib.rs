@@ -59,7 +59,7 @@ bitflags::bitflags! {
         const FILE_TRAVERSE = sys::FILE_TRAVERSE;
         /// The right to write file attributes.
         const FILE_WRITE_ATTRIBUTES = sys::FILE_WRITE_ATTRIBUTES;
-        /// For a file object, the right to write data to the file. 
+        /// For a file object, the right to write data to the file.
         /// For a directory object, the right to create a file in the directory (FILE_ADD_FILE).
         const FILE_WRITE_DATA = sys::FILE_WRITE_DATA;
         ///The right to write extended file attributes.
@@ -145,6 +145,11 @@ impl<'a> WriteWideCStringCell<'a> {
 pub trait Filesystem: Send + Sync + 'static {
     /// Called for opening files and directories
     fn create_file(&self, _file_name: &[u16], _desired_access: AccessMask) -> sys::NTSTATUS {
+        sys::STATUS_NOT_IMPLEMENTED
+    }
+
+    /// Called to get a function that returns entries in a directory
+    fn find_files(&self, _file_name: &[u16]) -> sys::NTSTATUS {
         sys::STATUS_NOT_IMPLEMENTED
     }
 
@@ -269,7 +274,14 @@ mod test {
                 return sys::STATUS_NO_SUCH_FILE;
             }
 
-            sys::STATUS_NOT_IMPLEMENTED
+            sys::STATUS_SUCCESS
+        }
+
+        fn find_files(&self, file_name: &[u16]) -> sys::NTSTATUS {
+            let file_name = PathBuf::from(OsString::from_wide(file_name));
+            println!("FindFiles(file_name=\"{}\")", file_name.display());
+
+            sys::STATUS_SUCCESS
         }
 
         fn get_volume_information(

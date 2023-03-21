@@ -7,6 +7,7 @@ use std::mem::MaybeUninit;
 /// Function trampolines
 pub(crate) static OPERATIONS: sys::DOKAN_OPERATIONS = sys::DOKAN_OPERATIONS {
     ZwCreateFile: Some(create_file_callback),
+    FindFiles: Some(find_files_callback),
     GetVolumeInformation: Some(get_volume_information_callback),
     Mounted: Some(mounted_callback),
     Unmounted: Some(unmounted_callback),
@@ -47,6 +48,24 @@ unsafe extern "stdcall" fn create_file_callback(
         global_context
             .filesystem
             .create_file(file_name, desired_access)
+    });
+
+    match result {
+        Ok(code) => code,
+        Err(_e) => sys::STATUS_INTERNAL_ERROR,
+    }
+}
+
+unsafe extern "stdcall" fn find_files_callback(
+    file_name: sys::LPCWSTR,
+    _fill_find_data: sys::PFillFindData,
+    dokan_file_info: sys::PDOKAN_FILE_INFO,
+) -> sys::NTSTATUS {
+    let result = std::panic::catch_unwind(|| {
+        let global_context = extract_global_context(dokan_file_info);
+        let file_name = slice_from_c_wstr_ptr(file_name);
+
+        global_context.filesystem.find_files(file_name)
     });
 
     match result {
