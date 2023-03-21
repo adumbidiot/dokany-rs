@@ -44,10 +44,15 @@ unsafe extern "stdcall" fn create_file_callback(
         let global_context = extract_global_context(dokan_file_info);
         let file_name = slice_from_c_wstr_ptr(file_name);
         let desired_access = AccessMask::from_bits_retain(desired_access);
+        let mut is_dir = (*dokan_file_info).IsDirectory != 0;
 
-        global_context
+        let result = global_context
             .filesystem
-            .create_file(file_name, desired_access)
+            .create_file(file_name, desired_access, &mut is_dir);
+
+        (*dokan_file_info).IsDirectory = u8::from(is_dir);
+
+        result
     });
 
     match result {

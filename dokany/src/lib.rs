@@ -141,10 +141,15 @@ impl<'a> WriteWideCStringCell<'a> {
     }
 }
 
-/// The trait a type must implement to serve as a filesystem
-pub trait Filesystem: Send + Sync + 'static {
+/// The trait a type must implement to serve as a file system
+pub trait FileSystem: Send + Sync + 'static {
     /// Called for opening files and directories
-    fn create_file(&self, _file_name: &[u16], _desired_access: AccessMask) -> sys::NTSTATUS {
+    fn create_file(
+        &self,
+        _file_name: &[u16],
+        _desired_access: AccessMask,
+        _is_dir: &mut bool,
+    ) -> sys::NTSTATUS {
         sys::STATUS_NOT_IMPLEMENTED
     }
 
@@ -201,11 +206,11 @@ pub fn driver_version() -> u32 {
 }
 
 pub(crate) struct GlobalContext {
-    pub filesystem: Box<dyn Filesystem>,
+    pub filesystem: Box<dyn FileSystem>,
 }
 
 /// Mount and run a filesystem from the given options an mount object.
-pub fn main(mut options: Options, filesystem: impl Filesystem) -> Result<(), MainResult> {
+pub fn main(mut options: Options, filesystem: impl FileSystem) -> Result<(), MainResult> {
     // Inject the filesystem as context.
     let context = Box::new(GlobalContext {
         filesystem: Box::new(filesystem),
@@ -269,12 +274,18 @@ mod test {
     use super::*;
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
+    use std::path::Path;
     use std::path::PathBuf;
 
-    struct SimpleFilesystem;
+    struct SimpleFileSystem;
 
-    impl Filesystem for SimpleFilesystem {
-        fn create_file(&self, file_name: &[u16], desired_access: AccessMask) -> sys::NTSTATUS {
+    impl FileSystem for SimpleFileSystem {
+        fn create_file(
+            &self,
+            file_name: &[u16],
+            desired_access: AccessMask,
+            is_dir: &mut bool,
+        ) -> sys::NTSTATUS {
             let file_name = PathBuf::from(OsString::from_wide(file_name));
             println!(
                 "CreateFile(file_name=\"{}\", desired_access={:?})",
@@ -284,6 +295,10 @@ mod test {
 
             if file_name.starts_with("\\System Volume Information") {
                 return sys::STATUS_NO_SUCH_FILE;
+            }
+
+            if file_name == Path::new("/") {
+                *is_dir = true;
             }
 
             sys::STATUS_SUCCESS
@@ -360,7 +375,7 @@ mod test {
         options.set_mount_point("Z");
         options.set_option_flags(OptionFlags::MOUNT_MANAGER);
 
-        let simple_filesystem = SimpleFilesystem;
+        let simple_filesystem = SimpleFileSystem;
 
         match main(options, simple_filesystem) {
             Ok(()) => {}
