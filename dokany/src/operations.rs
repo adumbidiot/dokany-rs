@@ -29,7 +29,7 @@ unsafe fn extract_global_context<'a>(
 }
 
 unsafe extern "stdcall" fn create_file_callback(
-    _filename: sys::LPCWSTR,
+    file_name: sys::LPCWSTR,
     _security_context: sys::PDOKAN_IO_SECURITY_CONTEXT,
     _desired_access: sys::ACCESS_MASK,
     _file_attributes: sys::ULONG,
@@ -40,8 +40,9 @@ unsafe extern "stdcall" fn create_file_callback(
 ) -> sys::NTSTATUS {
     let result = std::panic::catch_unwind(|| {
         let global_context = extract_global_context(dokan_file_info);
+        let file_name = slice_from_c_wstr_ptr(file_name);
 
-        global_context.filesystem.create_file()
+        global_context.filesystem.create_file(file_name)
     });
 
     match result {

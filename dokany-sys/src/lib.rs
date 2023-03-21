@@ -15,6 +15,7 @@ pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
 pub use windows_sys::Win32::Foundation::STATUS_INTERNAL_ERROR;
 pub use windows_sys::Win32::Foundation::STATUS_NOT_IMPLEMENTED;
+pub use windows_sys::Win32::Foundation::STATUS_NO_SUCH_FILE;
 pub use windows_sys::Win32::Foundation::STATUS_SUCCESS;
 pub use windows_sys::Win32::Foundation::TRUE;
 pub use windows_sys::Win32::Security::SECURITY_DESCRIPTOR;

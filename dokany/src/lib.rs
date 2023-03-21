@@ -56,7 +56,7 @@ impl<'a> WriteWideCStringCell<'a> {
 /// The trait a type must implement to serve as a filesystem
 pub trait Filesystem: Send + Sync + 'static {
     /// Called for opening files and directories
-    fn create_file(&self) -> sys::NTSTATUS {
+    fn create_file(&self, _file_name: &[u16]) -> sys::NTSTATUS {
         sys::STATUS_NOT_IMPLEMENTED
     }
 
@@ -169,8 +169,13 @@ mod test {
     struct SimpleFilesystem;
 
     impl Filesystem for SimpleFilesystem {
-        fn create_file(&self) -> sys::NTSTATUS {
-            println!("CreateFile");
+        fn create_file(&self, file_name: &[u16]) -> sys::NTSTATUS {
+            let file_name = PathBuf::from(OsString::from_wide(file_name));
+            println!("CreateFile(file_name=\"{}\")", file_name.display());
+
+            if file_name.starts_with("\\System Volume Information") {
+                return sys::STATUS_NO_SUCH_FILE;
+            }
 
             sys::STATUS_NOT_IMPLEMENTED
         }
