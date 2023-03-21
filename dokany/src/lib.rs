@@ -84,6 +84,12 @@ impl FindData {
     }
 }
 
+impl Default for FindData {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// The trait a type must implement to serve as a file system
 pub trait FileSystem: Send + Sync + 'static {
     /// Called for opening files and directories
