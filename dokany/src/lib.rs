@@ -201,11 +201,11 @@ pub fn driver_version() -> u32 {
 }
 
 pub(crate) struct GlobalContext {
-    pub filesystem: Box<dyn Filesystem>,
+    pub filesystem: Box<dyn FileSystem>,
 }
 
 /// Mount and run a filesystem from the given options an mount object.
-pub fn main(mut options: Options, filesystem: impl Filesystem) -> Result<(), MainResult> {
+pub fn main(mut options: Options, filesystem: impl FileSystem) -> Result<(), MainResult> {
     // Inject the filesystem as context.
     let context = Box::new(GlobalContext {
         filesystem: Box::new(filesystem),
@@ -271,9 +271,9 @@ mod test {
     use std::os::windows::ffi::OsStringExt;
     use std::path::PathBuf;
 
-    struct SimpleFilesystem;
+    struct SimpleFileSystem;
 
-    impl Filesystem for SimpleFileSystem {
+    impl FileSystem for SimpleFileSystem {
         fn create_file(&self, file_name: &[u16], desired_access: AccessMask) -> sys::NTSTATUS {
             let file_name = PathBuf::from(OsString::from_wide(file_name));
             println!(
@@ -360,7 +360,7 @@ mod test {
         options.set_mount_point("Z");
         options.set_option_flags(OptionFlags::MOUNT_MANAGER);
 
-        let simple_filesystem = SimpleFilesystem;
+        let simple_filesystem = SimpleFileSystem;
 
         match main(options, simple_filesystem) {
             Ok(()) => {}
