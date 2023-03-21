@@ -141,6 +141,35 @@ impl<'a> WriteWideCStringCell<'a> {
     }
 }
 
+/// Supply a FindData entry for directory listing.
+pub struct FillFindData<'a> {
+    dokan_file_info: &'a mut sys::DOKAN_FILE_INFO,
+    func: sys::PFillFindData,
+}
+
+impl FillFindData<'_> {
+    /// Fill this with a new FindData entry.
+    pub fn fill(&mut self, find_data: &mut FindData) {
+        let func = self.func.unwrap();
+
+        let result = unsafe { (func)(&mut find_data.find_data, self.dokan_file_info) };
+
+        assert!(result == 0);
+    }
+}
+
+/// A dir entry
+pub struct FindData {
+    find_data: sys::WIN32_FIND_DATAW,
+}
+
+impl FindData {
+    /// Create an empty file data
+    pub fn new() -> Self {
+        unsafe { std::mem::zeroed() }
+    }
+}
+
 /// The trait a type must implement to serve as a file system
 pub trait FileSystem: Send + Sync + 'static {
     /// Called for opening files and directories
@@ -154,7 +183,7 @@ pub trait FileSystem: Send + Sync + 'static {
     }
 
     /// Called to get a function that returns entries in a directory
-    fn find_files(&self, _file_name: &[u16]) -> sys::NTSTATUS {
+    fn find_files(&self, _file_name: &[u16], _fill_find_data: FillFindData<'_>) -> sys::NTSTATUS {
         sys::STATUS_NOT_IMPLEMENTED
     }
 
@@ -304,7 +333,11 @@ mod test {
             sys::STATUS_SUCCESS
         }
 
-        fn find_files(&self, file_name: &[u16]) -> sys::NTSTATUS {
+        fn find_files(
+            &self,
+            file_name: &[u16],
+            _fill_find_data: FillFindData<'_>,
+        ) -> sys::NTSTATUS {
             let file_name = PathBuf::from(OsString::from_wide(file_name));
             println!("FindFiles(file_name=\"{}\")", file_name.display());
 

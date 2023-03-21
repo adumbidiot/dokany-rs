@@ -1,5 +1,6 @@
 use crate::sys;
 use crate::AccessMask;
+use crate::FillFindData;
 use crate::GlobalContext;
 use crate::WriteWideCStringCell;
 use std::mem::MaybeUninit;
@@ -63,14 +64,20 @@ unsafe extern "stdcall" fn create_file_callback(
 
 unsafe extern "stdcall" fn find_files_callback(
     file_name: sys::LPCWSTR,
-    _fill_find_data: sys::PFillFindData,
+    fill_find_data: sys::PFillFindData,
     dokan_file_info: sys::PDOKAN_FILE_INFO,
 ) -> sys::NTSTATUS {
     let result = std::panic::catch_unwind(|| {
         let global_context = extract_global_context(dokan_file_info);
         let file_name = slice_from_c_wstr_ptr(file_name);
+        let fill_find_data = FillFindData {
+            func: fill_find_data,
+            dokan_file_info: &mut *dokan_file_info,
+        };
 
-        global_context.filesystem.find_files(file_name)
+        global_context
+            .filesystem
+            .find_files(file_name, fill_find_data)
     });
 
     match result {
