@@ -83,6 +83,15 @@ impl FindData {
         unsafe { std::mem::zeroed() }
     }
 
+    /// Set the file size
+    pub fn set_size(&mut self, file_size: u64) {
+        let low: u32 = (file_size & 0xFFFFFFFF).try_into().unwrap();
+        let high: u32 = (file_size >> 32).try_into().unwrap();
+
+        self.find_data.nFileSizeHigh = high;
+        self.find_data.nFileSizeLow = low;
+    }
+
     /// Set the file name.
     pub fn set_file_name(&mut self, file_name: impl AsWide) {
         let max_len = self.find_data.cFileName.len() - 1;
