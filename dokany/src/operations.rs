@@ -1,4 +1,5 @@
 use crate::sys;
+use crate::AccessMask;
 use crate::GlobalContext;
 use crate::WriteWideCStringCell;
 use std::mem::MaybeUninit;
@@ -31,7 +32,7 @@ unsafe fn extract_global_context<'a>(
 unsafe extern "stdcall" fn create_file_callback(
     file_name: sys::LPCWSTR,
     _security_context: sys::PDOKAN_IO_SECURITY_CONTEXT,
-    _desired_access: sys::ACCESS_MASK,
+    desired_access: sys::ACCESS_MASK,
     _file_attributes: sys::ULONG,
     _share_access: sys::ULONG,
     _create_disposition: sys::ULONG,
@@ -41,8 +42,11 @@ unsafe extern "stdcall" fn create_file_callback(
     let result = std::panic::catch_unwind(|| {
         let global_context = extract_global_context(dokan_file_info);
         let file_name = slice_from_c_wstr_ptr(file_name);
+        let desired_access = AccessMask::from_bits_retain(desired_access);
 
-        global_context.filesystem.create_file(file_name)
+        global_context
+            .filesystem
+            .create_file(file_name, desired_access)
     });
 
     match result {
