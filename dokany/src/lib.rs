@@ -249,7 +249,7 @@ pub fn unmount(drive_letter: char) -> bool {
 /// Returns true if successful.
 pub fn remove_mount_point(path: impl AsWide) -> bool {
     init();
-    
+
     let path: Vec<u16> = path.as_wide().chain(std::iter::once(0)).collect();
 
     unsafe { sys::DokanRemoveMountPoint(path.as_ptr()) == sys::TRUE }
@@ -343,7 +343,7 @@ mod test {
 
         let unmount_z = unmount('Z');
         println!("Unmount Z (no mount): {unmount_z}");
-        
+
         let remove_mount_point_z = remove_mount_point("Z");
         println!("Remove Mount Point Z (no mount): {remove_mount_point_z}");
 
