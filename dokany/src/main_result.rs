@@ -59,7 +59,7 @@ impl std::fmt::Display for MainResult {
             ),
             Self::MOUNT_POINT_ERROR => write!(f, "mount failed, the mount point is invalid"),
             Self::VERSION_ERROR => write!(f, "mount failed, requested an incompatible version"),
-            _ => write!(f, "Dokany Error Code {}", self.0),
+            _ => write!(f, "mount failed, error code {}", self.0),
         }
     }
 }

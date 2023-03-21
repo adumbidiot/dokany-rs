@@ -13,12 +13,75 @@ pub use windows_sys::Win32::Foundation::FALSE;
 pub use windows_sys::Win32::Foundation::FILETIME;
 pub use windows_sys::Win32::Foundation::MAX_PATH;
 pub use windows_sys::Win32::Foundation::NTSTATUS;
+pub use windows_sys::Win32::Foundation::STATUS_INTERNAL_ERROR;
+pub use windows_sys::Win32::Foundation::STATUS_NOT_IMPLEMENTED;
+pub use windows_sys::Win32::Foundation::STATUS_NO_SUCH_FILE;
+pub use windows_sys::Win32::Foundation::STATUS_SUCCESS;
 pub use windows_sys::Win32::Foundation::TRUE;
 pub use windows_sys::Win32::Security::SECURITY_DESCRIPTOR;
 pub use windows_sys::Win32::Storage::FileSystem::BY_HANDLE_FILE_INFORMATION;
+pub use windows_sys::Win32::Storage::FileSystem::DELETE;
 pub use windows_sys::Win32::Storage::FileSystem::FILE_ACCESS_FLAGS;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_ADD_FILE;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_ADD_SUBDIRECTORY;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_ALL_ACCESS;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_APPEND_DATA;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_CREATE_PIPE_INSTANCE;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_DELETE_CHILD;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_EXECUTE;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_LIST_DIRECTORY;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_READ_ATTRIBUTES;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_READ_DATA;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_READ_EA;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_TRAVERSE;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_WRITE_ATTRIBUTES;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_WRITE_DATA;
+pub use windows_sys::Win32::Storage::FileSystem::FILE_WRITE_EA;
+pub use windows_sys::Win32::Storage::FileSystem::READ_CONTROL;
+pub use windows_sys::Win32::Storage::FileSystem::SPECIFIC_RIGHTS_ALL;
+pub use windows_sys::Win32::Storage::FileSystem::STANDARD_RIGHTS_ALL;
+pub use windows_sys::Win32::Storage::FileSystem::STANDARD_RIGHTS_EXECUTE;
+pub use windows_sys::Win32::Storage::FileSystem::STANDARD_RIGHTS_READ;
+pub use windows_sys::Win32::Storage::FileSystem::STANDARD_RIGHTS_REQUIRED;
+pub use windows_sys::Win32::Storage::FileSystem::STANDARD_RIGHTS_WRITE;
+pub use windows_sys::Win32::Storage::FileSystem::SYNCHRONIZE;
 pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
 pub use windows_sys::Win32::Storage::FileSystem::WIN32_FIND_STREAM_DATA;
+pub use windows_sys::Win32::Storage::FileSystem::WRITE_DAC;
+pub use windows_sys::Win32::Storage::FileSystem::WRITE_OWNER;
+pub use windows_sys::Win32::System::SystemServices::ACCESS_SYSTEM_SECURITY;
+pub use windows_sys::Win32::System::SystemServices::FILE_CASE_PRESERVED_NAMES;
+pub use windows_sys::Win32::System::SystemServices::FILE_CASE_SENSITIVE_SEARCH;
+pub use windows_sys::Win32::System::SystemServices::FILE_DAX_VOLUME;
+pub use windows_sys::Win32::System::SystemServices::FILE_FILE_COMPRESSION;
+pub use windows_sys::Win32::System::SystemServices::FILE_NAMED_STREAMS;
+pub use windows_sys::Win32::System::SystemServices::FILE_PERSISTENT_ACLS;
+pub use windows_sys::Win32::System::SystemServices::FILE_READ_ONLY_VOLUME;
+pub use windows_sys::Win32::System::SystemServices::FILE_RETURNS_CLEANUP_RESULT_INFO;
+pub use windows_sys::Win32::System::SystemServices::FILE_SEQUENTIAL_WRITE_ONCE;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_BLOCK_REFCOUNTING;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_ENCRYPTION;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_EXTENDED_ATTRIBUTES;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_GHOSTING;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_HARD_LINKS;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_INTEGRITY_STREAMS;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_OBJECT_IDS;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_OPEN_BY_FILE_ID;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_POSIX_UNLINK_RENAME;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_REMOTE_STORAGE;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_REPARSE_POINTS;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_SPARSE_FILES;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_SPARSE_VDL;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_TRANSACTIONS;
+pub use windows_sys::Win32::System::SystemServices::FILE_SUPPORTS_USN_JOURNAL;
+pub use windows_sys::Win32::System::SystemServices::FILE_UNICODE_ON_DISK;
+pub use windows_sys::Win32::System::SystemServices::FILE_VOLUME_IS_COMPRESSED;
+pub use windows_sys::Win32::System::SystemServices::FILE_VOLUME_QUOTAS;
+pub use windows_sys::Win32::System::SystemServices::GENERIC_ALL;
+pub use windows_sys::Win32::System::SystemServices::GENERIC_EXECUTE;
+pub use windows_sys::Win32::System::SystemServices::GENERIC_READ;
+pub use windows_sys::Win32::System::SystemServices::GENERIC_WRITE;
+pub use windows_sys::Win32::System::SystemServices::MAXIMUM_ALLOWED;
 
 // Primitives
 pub type USHORT = u16;
@@ -905,7 +968,7 @@ pub type PDOKAN_OPERATIONS = *mut DOKAN_OPERATIONS;
 
 impl DOKAN_OPERATIONS {
     /// Make a new empty [`DOKAN_OPERATIONS`].
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             Cleanup: None,
             CloseFile: None,
