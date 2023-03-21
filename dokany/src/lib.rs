@@ -144,7 +144,12 @@ impl<'a> WriteWideCStringCell<'a> {
 /// The trait a type must implement to serve as a file system
 pub trait FileSystem: Send + Sync + 'static {
     /// Called for opening files and directories
-    fn create_file(&self, _file_name: &[u16], _desired_access: AccessMask) -> sys::NTSTATUS {
+    fn create_file(
+        &self,
+        _file_name: &[u16],
+        _desired_access: AccessMask,
+        _is_dir: &mut bool,
+    ) -> sys::NTSTATUS {
         sys::STATUS_NOT_IMPLEMENTED
     }
 
@@ -269,12 +274,18 @@ mod test {
     use super::*;
     use std::ffi::OsString;
     use std::os::windows::ffi::OsStringExt;
+    use std::path::Path;
     use std::path::PathBuf;
 
     struct SimpleFileSystem;
 
     impl FileSystem for SimpleFileSystem {
-        fn create_file(&self, file_name: &[u16], desired_access: AccessMask) -> sys::NTSTATUS {
+        fn create_file(
+            &self,
+            file_name: &[u16],
+            desired_access: AccessMask,
+            is_dir: &mut bool,
+        ) -> sys::NTSTATUS {
             let file_name = PathBuf::from(OsString::from_wide(file_name));
             println!(
                 "CreateFile(file_name=\"{}\", desired_access={:?})",
@@ -284,6 +295,10 @@ mod test {
 
             if file_name.starts_with("\\System Volume Information") {
                 return sys::STATUS_NO_SUCH_FILE;
+            }
+
+            if file_name == Path::new("/") {
+                *is_dir = true;
             }
 
             sys::STATUS_SUCCESS
