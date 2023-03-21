@@ -82,6 +82,19 @@ impl FindData {
     pub fn new() -> Self {
         unsafe { std::mem::zeroed() }
     }
+
+    /// Set the file name.
+    pub fn set_file_name(&mut self, file_name: impl AsWide) {
+        let max_len = self.find_data.cFileName.len() - 1;
+        for (buffer, c) in self
+            .find_data
+            .cFileName
+            .iter_mut()
+            .zip(file_name.as_wide().take(max_len).chain(std::iter::once(0)))
+        {
+            *buffer = c;
+        }
+    }
 }
 
 impl Default for FindData {
