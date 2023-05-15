@@ -7,4 +7,4 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 bitflags = "2.2.1"
 dokany-sys = { path = "../dokany-sys" }
-libc = "0.2.143"
+libc = "0.2.144"
