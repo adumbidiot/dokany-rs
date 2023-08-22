@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["driver_version","init","main","remove_mount_point","shutdown","unmount","version"],"struct":["AccessMask","FileSystemFlags","FillFindData","FindData","MainResult","OptionFlags","Options","WriteWideCStringCell"],"trait":["AsWide","FileSystem"]};
